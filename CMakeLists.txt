@@ -8,3 +8,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -mavx2 -Wall -fno-strict-alia
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -msse2 -Wall -fno-strict-aliasing")
 
 add_subdirectory(binary_search)
+add_subdirectory(bubble_sort)
