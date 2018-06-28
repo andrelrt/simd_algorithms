@@ -60,6 +60,8 @@ size_t bench( const std::string& name, size_t size, size_t loop )
     std::generate_n( std::back_inserter(org), size, &rand );
 
     sort_type sort;
+    container_type warmup( org );
+    sort.sort( warmup );
 
     timer.start();
     for( size_t j = 0; j < loop; ++j )
@@ -73,8 +75,7 @@ size_t bench( const std::string& name, size_t size, size_t loop )
         {
             if( *it < last )
             {
-                std::cout << last << " gt " << *it;
-                break;
+                std::cout << last << " gt " << *it << " - ";
             }
         }
     }
@@ -89,7 +90,9 @@ int main(int /*argc*/, char* /*argv*/[])
     std::cout << "\nsize: 0x00ff'ffff\n\n";
     while( 1 )
     {
-        /*size_t base =*/ bench< std::vector< uint32_t >, stl_sort>( "STL sort ...", 0x00ffffff, 1 );
+        size_t bsort = bench< std::vector< uint32_t >, bubble_sort>( "Bubble sort ", 0x01000000, 1 );
+        size_t stlsort = bench< std::vector< uint32_t >, stl_sort>( "STL sort ...", 0x01000000, 1 );
+
 
 //        std::cout << std::endl << "Index Nocahe Diff: " << std::fixed << std::setprecision(2)
 //                  << 100.0f * (((float) nocache)/((float) base) - 1.0f) << "%"
