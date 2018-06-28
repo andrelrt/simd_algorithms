@@ -3,6 +3,8 @@
 
 #include <immintrin.h>
 #include <x86intrin.h>
+#include <type_traits>
+#include <limits>
 
 namespace simd_algorithms {
 
@@ -16,6 +18,13 @@ template< typename ValueType_T > struct simd_traits< ValueType_T, sse_tag >
 {
     using simd_type = __m128i;
     constexpr static size_t simd_size = sizeof(simd_type)/sizeof(ValueType_T);
+
+    static typename std::enable_if< std::is_same< ValueType_T,
+                                                  uint32_t >::value,
+                                    simd_type >::type max()
+    {
+        return _mm_set1_epi32( std::numeric_limits<uint32_t>::max() );
+    }
 };
 
 template< typename ValueType_T > struct simd_traits< ValueType_T, avx_tag >
@@ -30,6 +39,16 @@ template< typename ValueType_T > struct simd_traits< ValueType_T, avx_tag >
 namespace compare{
 
 template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct greater_than { };
+template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct less_than { };
+
+
+template<> struct less_than< uint32_t, traits::sse_tag >
+{
+    inline size_t operator()( __m128i cmp, uint32_t key ) {
+        uint32_t mask = _mm_movemask_epi8( _mm_cmpgt_epi32( _mm_set1_epi32( key ), cmp ) );
+        return (mask == 0) ? 0 : (_bit_scan_reverse( mask ) >> 2) + 1;
+    }
+};
 
 // SSE2 - SSE4.2
 template<> struct greater_than< uint8_t, traits::sse_tag >

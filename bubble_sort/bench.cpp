@@ -1,4 +1,4 @@
-//#include "bubble_sort.h"
+#include "bubble_sort.h"
 
 #include <iostream>
 #include <iomanip>
@@ -9,7 +9,7 @@
 
 
 template< class Cont_T >
-struct stl_sort 
+struct stl_sort
 {
 	using container_type = Cont_T;
 
@@ -20,7 +20,7 @@ struct stl_sort
 };
 
 template< class Cont_T >
-struct bubble_sort 
+struct basic_bubble_sort
 {
 	using container_type = Cont_T;
     using iterator = typename container_type::iterator;
@@ -41,6 +41,7 @@ struct bubble_sort
                     std::swap( *last, *it );
                     sorted = false;
                 }
+                last = it;
             }
 
         } while( !sorted );
@@ -56,7 +57,7 @@ size_t bench( const std::string& name, size_t size, size_t loop )
     boost::timer::cpu_timer timer;
     container_type org;
 
-    srand( 1 );
+    srand(1);
     std::generate_n( std::back_inserter(org), size, &rand );
 
     sort_type sort;
@@ -70,13 +71,14 @@ size_t bench( const std::string& name, size_t size, size_t loop )
         sort.sort( temp );
 
         auto it = std::begin( temp );
-        auto last = *it;
+        auto last = it;
         for( ++it; it < std::end( temp ); ++it )
         {
-            if( *it < last )
+            if( *it < *last )
             {
-                std::cout << last << " gt " << *it << " - ";
+                std::cout << *last << " gt " << *it << " - ";
             }
+            last = it;
         }
     }
     timer.stop();
@@ -87,20 +89,21 @@ size_t bench( const std::string& name, size_t size, size_t loop )
 
 int main(int /*argc*/, char* /*argv*/[])
 {
-    std::cout << "\nsize: 0x00ff'ffff\n\n";
+    std::cout << "\nsize: 0x0001'0000\n\n";
     while( 1 )
     {
-        size_t bsort = bench< std::vector< uint32_t >, bubble_sort>( "Bubble sort ", 0x01000000, 1 );
-        size_t stlsort = bench< std::vector< uint32_t >, stl_sort>( "STL sort ...", 0x01000000, 1 );
+        size_t stlsort = bench< std::vector< uint32_t >, stl_sort>( "STL sort .......", 0x00010000, 1 );
+        size_t bsort = bench< std::vector< uint32_t >, basic_bubble_sort>( "Bubble sort ....", 0x00010000, 1 );
+        size_t simdsort = bench< std::vector< uint32_t >, simd_algorithms::sort::bubble>( "SIMD Bubble sort ", 0x00010000, 1 );
 
 
-//        std::cout << std::endl << "Index Nocahe Diff: " << std::fixed << std::setprecision(2)
-//                  << 100.0f * (((float) nocache)/((float) base) - 1.0f) << "%"
-//                  << std::endl << "Index Cache Diff: " << std::fixed << std::setprecision(2)
-//                  << 100.0f * (((float) cache)/((float) base) - 1.0f) << "%"
-//                  << std::endl << "Index Cache / Index Nocache Diff: " << std::fixed << std::setprecision(2)
-//                  << 100.0f * (((float) cache)/((float) nocache) - 1.0f) << "%"
-//                  << std::endl << std::endl;
+        std::cout << std::endl << "SIMD Diff: " << std::fixed << std::setprecision(2)
+                  << 100.0f * (((float) simdsort)/((float) bsort) - 1.0f) << "%"
+                  << std::endl << "STL Diff: " << std::fixed << std::setprecision(2)
+                  << 100.0f * (((float) stlsort)/((float) bsort) - 1.0f) << "%"
+                  << std::endl << "STL/SIMD Diff: " << std::fixed << std::setprecision(2)
+                  << 100.0f * (((float) stlsort)/((float) simdsort) - 1.0f) << "%"
+                  << std::endl << std::endl;
     }
     return 0;
 }
