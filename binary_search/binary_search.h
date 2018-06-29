@@ -139,6 +139,7 @@ ForwardIterator lower_bound( ForwardIterator beg, ForwardIterator end, const T& 
     static auto gt = compare::greater_than< value_type >();
     size_t i = gt( key, cmp );
 
+    // Recalculate iterators
     it = beg;
     std::advance( it, i * step );
     const_iterator itEnd;
@@ -149,10 +150,10 @@ ForwardIterator lower_bound( ForwardIterator beg, ForwardIterator end, const T& 
     else
     {
         itEnd = it;
-        std::advance( itEnd, step );
-        ++itEnd;
+        std::advance( itEnd, step + 1 );
     }
 
+    // Standard lower_bound on 1/(n+1) of container size
     return std::lower_bound( it, itEnd, key );
 }
 
