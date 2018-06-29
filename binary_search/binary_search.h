@@ -4,6 +4,7 @@
 #include <immintrin.h>
 #include <x86intrin.h>
 #include <array>
+#include <iterator>
 #include "simd_compare.h"
 
 namespace simd_algorithms{
@@ -110,6 +111,50 @@ private:
     std::array< const_iterator, array_size + 2 > ranges_;
     typename traits::simd_traits< value_type >::simd_type cmp_;
 };
+
+template <class ForwardIterator, class T>
+ForwardIterator lower_bound( ForwardIterator beg, ForwardIterator end, const T& key )
+{
+    using value_type     = typename std::iterator_traits< ForwardIterator >::value_type;
+    using const_iterator = ForwardIterator;
+    using simd_type      = typename traits::simd_traits< value_type >::simd_type;
+
+    constexpr static size_t array_size = traits::simd_traits< value_type >::simd_size;
+
+    size_t size = std::distance( beg, end );
+    size_t step = size / (array_size + 1);
+
+    // Create SIMD search key
+    simd_type cmp;
+    const_iterator it = beg;
+    value_type* pCmp = reinterpret_cast< value_type* >( &cmp );
+    for( size_t i = 0; i < array_size; ++i )
+    {
+        std::advance( it, step );
+        *pCmp = *it;
+        ++pCmp;
+    }
+
+    // N-Way search
+    static auto gt = compare::greater_than< value_type >();
+    size_t i = gt( key, cmp );
+
+    it = beg;
+    std::advance( it, i * step );
+    const_iterator itEnd;
+    if( i == array_size )
+    {
+        itEnd = end;
+    }
+    else
+    {
+        itEnd = it;
+        std::advance( itEnd, step );
+        ++itEnd;
+    }
+
+    return std::lower_bound( it, itEnd, key );
+}
 
 }} // namespace simd_algoriths::binary_search
 

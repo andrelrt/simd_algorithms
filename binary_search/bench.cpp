@@ -28,6 +28,26 @@ private:
     const container_type& ref_;
 };
 
+template< class Cont_T >
+struct container_simd_lb
+{
+	using container_type = Cont_T;
+    using value_type     = typename container_type::value_type;
+    using const_iterator = typename container_type::const_iterator;
+
+    container_simd_lb( const container_type& ref ) : ref_( ref ){}
+
+    void build_index(){}
+
+    const_iterator find( const value_type& key )
+    {
+        auto first = simd_algorithms::binary_search::lower_bound( ref_.begin(), ref_.end(), key );
+        return (first!=ref_.end() && !(key<*first)) ? first : ref_.end();
+    }
+private:
+    const container_type& ref_;
+};
+
 template< class Cont_T, template < typename... > class Index_T >
 size_t bench( const std::string& name, size_t size, size_t loop )
 {
@@ -72,20 +92,23 @@ size_t bench( const std::string& name, size_t size, size_t loop )
 
 int main(int /*argc*/, char* /*argv*/[])
 {
-    std::cout << "\nsize: 0x003f'ffff\n\n";
+    std::cout << "\nsize: 0x0040'0000\n\n";
     while( 1 )
     {
-        size_t base = bench< std::vector< uint32_t >, container_only >( "lower_bound ...", 0x003fffff, 10 );
+        size_t base = bench< std::vector< uint32_t >, container_only >( "lower_bound .....", 0x00400000, 10 );
         size_t nocache = bench< std::vector< uint32_t >,
-                                simd_algorithms::binary_search::index_nocache >( "index_nocache .", 0x003fffff, 10 );
+                                simd_algorithms::binary_search::index_nocache >( "index_nocache ...", 0x00400000, 10 );
 
         size_t cache = bench< std::vector< uint32_t >,
-                              simd_algorithms::binary_search::index_cache >( "index_cache ...", 0x003fffff, 10 );
+                              simd_algorithms::binary_search::index_cache >( "index_cache .....", 0x00400000, 10 );
+        size_t simdlb = bench< std::vector< uint32_t >, container_simd_lb >( "SIMD lower_bound ", 0x00400000, 10 );
 
         std::cout << std::endl << "Index Nocahe Speed up .......: " << std::fixed << std::setprecision(2)
                   << static_cast<float>(base)/static_cast<float>(nocache) << "x"
                   << std::endl << "Index Cache Speed up ........: " << std::fixed << std::setprecision(2)
                   << static_cast<float>(base)/static_cast<float>(cache) << "x"
+                  << std::endl << "SIMD lower_bound Speed up ...: " << std::fixed << std::setprecision(2)
+                  << static_cast<float>(base)/static_cast<float>(simdlb) << "x"
                   << std::endl << "Index Cache/Nocache Speed up : " << std::fixed << std::setprecision(2)
                   << static_cast<float>(nocache)/static_cast<float>(cache) << "x"
                   << std::endl << std::endl;
