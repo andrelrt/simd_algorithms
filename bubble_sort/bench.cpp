@@ -59,6 +59,8 @@ size_t bench( const std::string& name, size_t size, size_t loop )
 
     srand(1);
     std::generate_n( std::back_inserter(org), size, &rand );
+    //size_t cnt = size;
+    //std::generate_n( std::back_inserter(org), size, [&cnt](){ return --cnt; } );
 
     sort_type sort;
     container_type warmup( org );
@@ -92,17 +94,22 @@ int main(int /*argc*/, char* /*argv*/[])
     std::cout << "\nsize: 0x0001'0000\n\n";
     while( 1 )
     {
-        size_t stlsort = bench< std::vector< uint32_t >, stl_sort>( "STL sort .......", 0x00010000, 1 );
-        size_t bsort = bench< std::vector< uint32_t >, basic_bubble_sort>( "Bubble sort ....", 0x00010000, 1 );
-        size_t simdsort = bench< std::vector< uint32_t >, simd_algorithms::sort::bubble>( "SIMD Bubble sort ", 0x00010000, 1 );
+        size_t stlsort = bench< std::vector< uint32_t >, stl_sort>( "STL sort .........", 0x00010000, 1 );
+        size_t bsort = bench< std::vector< uint32_t >, basic_bubble_sort>( "Bubble sort ......", 0x00010000, 1 );
+        size_t simdsort = bench< std::vector< uint32_t >, simd_algorithms::sort::bubble>( "SIMD Bubble sort .", 0x00010000, 1 );
+        size_t simdsort2 = bench< std::vector< uint32_t >, simd_algorithms::sort::bubble2>( "SIMD Bubble2 sort ", 0x00010000, 1 );
 
 
-        std::cout << std::endl << "SIMD Diff: " << std::fixed << std::setprecision(2)
+        std::cout << std::endl << "SIMD Diff ......: " << std::fixed << std::setprecision(2)
                   << 100.0f * (((float) simdsort)/((float) bsort) - 1.0f) << "%"
-                  << std::endl << "STL Diff: " << std::fixed << std::setprecision(2)
+                  << std::endl << "SIMD2 Diff .....: " << std::fixed << std::setprecision(2)
+                  << 100.0f * (((float) simdsort2)/((float) bsort) - 1.0f) << "%"
+                  << std::endl << "SIMD2/SIMD Diff : " << std::fixed << std::setprecision(2)
+                  << 100.0f * (((float) simdsort2)/((float) simdsort) - 1.0f) << "%"
+                  << std::endl << "STL Diff .......: " << std::fixed << std::setprecision(2)
                   << 100.0f * (((float) stlsort)/((float) bsort) - 1.0f) << "%"
-                  << std::endl << "STL/SIMD Diff: " << std::fixed << std::setprecision(2)
-                  << 100.0f * (((float) stlsort)/((float) simdsort) - 1.0f) << "%"
+                  << std::endl << "STL/SIMD2 Diff .: " << std::fixed << std::setprecision(2)
+                  << 100.0f * (((float) stlsort)/((float) simdsort2) - 1.0f) << "%"
                   << std::endl << std::endl;
     }
     return 0;
