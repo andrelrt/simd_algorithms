@@ -7,6 +7,7 @@
 #include <numeric>
 #include <boost/timer/timer.hpp>
 
+bool g_verbose = true;
 
 template< class Cont_T >
 struct container_only
@@ -85,14 +86,23 @@ size_t bench( const std::string& name, size_t size, size_t loop )
         }
     }
     timer.stop();
-    std::cout << "Find all " << name << ": " << timer.format();
+    if( g_verbose )
+        std::cout << "Find all " << name << ": " << timer.format();
 
     return timer.elapsed().wall;
 }
 
-int main(int /*argc*/, char* /*argv*/[])
+int main(int argc, char* /*argv*/[])
 {
-    std::cout << "\nsize: 0x0040'0000\n\n";
+    if( argc > 1 )
+    {
+        g_verbose = false;
+        std::cout << "base,nocache,cache,simdlb" << std::endl;
+    }
+    else
+    {
+        std::cout << "\nsize: 0x0040'0000\n\n";
+    }
     while( 1 )
     {
         size_t base = bench< std::vector< uint32_t >, container_only >( "lower_bound .....", 0x00400000, 10 );
@@ -103,15 +113,22 @@ int main(int /*argc*/, char* /*argv*/[])
                               simd_algorithms::binary_search::index_cache >( "index_cache .....", 0x00400000, 10 );
         size_t simdlb = bench< std::vector< uint32_t >, container_simd_lb >( "SIMD lower_bound ", 0x00400000, 10 );
 
-        std::cout << std::endl << "Index Nocahe Speed up .......: " << std::fixed << std::setprecision(2)
-                  << static_cast<float>(base)/static_cast<float>(nocache) << "x"
-                  << std::endl << "Index Cache Speed up ........: " << std::fixed << std::setprecision(2)
-                  << static_cast<float>(base)/static_cast<float>(cache) << "x"
-                  << std::endl << "SIMD lower_bound Speed up ...: " << std::fixed << std::setprecision(2)
-                  << static_cast<float>(base)/static_cast<float>(simdlb) << "x"
-                  << std::endl << "Index Cache/Nocache Speed up : " << std::fixed << std::setprecision(2)
-                  << static_cast<float>(nocache)/static_cast<float>(cache) << "x"
-                  << std::endl << std::endl;
+        if( g_verbose )
+        {
+            std::cout << std::endl << "Index Nocahe Speed up .......: " << std::fixed << std::setprecision(2)
+                      << static_cast<float>(base)/static_cast<float>(nocache) << "x"
+                      << std::endl << "Index Cache Speed up ........: " << std::fixed << std::setprecision(2)
+                      << static_cast<float>(base)/static_cast<float>(cache) << "x"
+                      << std::endl << "SIMD lower_bound Speed up ...: " << std::fixed << std::setprecision(2)
+                      << static_cast<float>(base)/static_cast<float>(simdlb) << "x"
+                      << std::endl << "Index Cache/Nocache Speed up : " << std::fixed << std::setprecision(2)
+                      << static_cast<float>(nocache)/static_cast<float>(cache) << "x"
+                      << std::endl << std::endl;
+        }
+        else
+        {
+            std::cout << base << "," << nocache << "," << cache << "," << simdlb << std::endl;
+        }
     }
     return 0;
 }
