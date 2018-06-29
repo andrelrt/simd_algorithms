@@ -3,7 +3,7 @@
 
 #include <immintrin.h>
 #include <x86intrin.h>
-#include <iostream>
+#include <algorithm>
 #include "simd_compare.h"
 
 namespace simd_algorithms{
@@ -21,7 +21,7 @@ public:
     {
         static auto lt = compare::less_than< value_type >();
         bool sorted;
-        size_t end = (cont.size() & ~(array_size - 1)) - array_size + 1;
+        size_t end = std::max<int64_t>( 0, static_cast<int64_t>(cont.size()) - array_size );
         do
         {
             sorted = true;
