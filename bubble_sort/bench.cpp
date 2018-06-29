@@ -100,16 +100,16 @@ int main(int /*argc*/, char* /*argv*/[])
         size_t simdsort2 = bench< std::vector< uint32_t >, simd_algorithms::sort::bubble2>( "SIMD Bubble2 sort ", 0x00010000, 1 );
 
 
-        std::cout << std::endl << "SIMD Diff ......: " << std::fixed << std::setprecision(2)
-                  << 100.0f * (((float) simdsort)/((float) bsort) - 1.0f) << "%"
-                  << std::endl << "SIMD2 Diff .....: " << std::fixed << std::setprecision(2)
-                  << 100.0f * (((float) simdsort2)/((float) bsort) - 1.0f) << "%"
-                  << std::endl << "SIMD2/SIMD Diff : " << std::fixed << std::setprecision(2)
-                  << 100.0f * (((float) simdsort2)/((float) simdsort) - 1.0f) << "%"
-                  << std::endl << "STL Diff .......: " << std::fixed << std::setprecision(2)
-                  << 100.0f * (((float) stlsort)/((float) bsort) - 1.0f) << "%"
-                  << std::endl << "STL/SIMD2 Diff .: " << std::fixed << std::setprecision(2)
-                  << 100.0f * (((float) stlsort)/((float) simdsort2) - 1.0f) << "%"
+        std::cout << std::endl << "SIMD Speed up ......: " << std::fixed << std::setprecision(2)
+                  << static_cast<float>(bsort)/static_cast<float>(simdsort) << "x"
+                  << std::endl << "SIMD2 Speed up .....: " << std::fixed << std::setprecision(2)
+                  << static_cast<float>(bsort)/static_cast<float>(simdsort2) << "x"
+                  << std::endl << "SIMD2/SIMD Speed up : " << std::fixed << std::setprecision(2)
+                  << static_cast<float>(simdsort)/static_cast<float>(simdsort2) << "x"
+                  << std::endl << "STL Speed up .......: " << std::fixed << std::setprecision(2)
+                  << static_cast<float>(bsort)/static_cast<float>(stlsort) << "x"
+                  << std::endl << "STL/SIMD2 Speed up .: " << std::fixed << std::setprecision(2)
+                  << static_cast<float>(simdsort2)/static_cast<float>(stlsort) << "x"
                   << std::endl << std::endl;
     }
     return 0;
