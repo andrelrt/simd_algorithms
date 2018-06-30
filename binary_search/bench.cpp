@@ -94,6 +94,8 @@ size_t bench( const std::string& name, size_t size, size_t loop )
 
 int main(int argc, char* /*argv*/[])
 {
+    constexpr size_t runSize = 0x00400000;
+    constexpr size_t loop = 10;
     if( argc > 1 )
     {
         g_verbose = false;
@@ -101,17 +103,17 @@ int main(int argc, char* /*argv*/[])
     }
     else
     {
-        std::cout << "\nsize: 0x0040'0000\n\n";
+        std::cout << "\nsize: 0x" << std::hex << std::setw(8) << std::setfill( '0') << runSize << std::endl << std::endl;
     }
     while( 1 )
     {
-        size_t base = bench< std::vector< uint32_t >, container_only >( "lower_bound .....", 0x00400000, 10 );
+        size_t base = bench< std::vector< uint32_t >, container_only >( "lower_bound .....", runSize, loop );
         size_t nocache = bench< std::vector< uint32_t >,
-                                simd_algorithms::binary_search::index_nocache >( "index_nocache ...", 0x00400000, 10 );
+                                simd_algorithms::binary_search::index_nocache >( "index_nocache ...", runSize, loop );
 
         size_t cache = bench< std::vector< uint32_t >,
-                              simd_algorithms::binary_search::index_cache >( "index_cache .....", 0x00400000, 10 );
-        size_t simdlb = bench< std::vector< uint32_t >, container_simd_lb >( "SIMD lower_bound ", 0x00400000, 10 );
+                              simd_algorithms::binary_search::index_cache >( "index_cache .....", runSize, loop );
+        size_t simdlb = bench< std::vector< uint32_t >, container_simd_lb >( "SIMD lower_bound ", runSize, loop );
 
         if( g_verbose )
         {
