@@ -45,7 +45,7 @@ template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct low_in
 template<> struct low_inserter< uint32_t, traits::sse_tag >
 {
     inline __m128i operator()( __m128i cmp, uint32_t key ) {
-        return _mm_or_si128( _mm_srli_si128( cmp, 4 ), _mm_set_epi32( key, 0, 0, 0 ) );
+        return _mm_insert_epi32( _mm_srli_si128( cmp, 4 ), key, 3 );
     }
 };
 

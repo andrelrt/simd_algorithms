@@ -50,7 +50,7 @@ public:
                 }
             }
 
-            for( size_t i = end; i < cont.size(); ++i )
+            for( size_t i = end+1; i < cont.size(); ++i )
             {
                 if( cont[i-1] > cont[i] )
                 {
@@ -78,7 +78,7 @@ public:
     void sort( container_type& cont )
     {
         static auto lt = compare::less_than< value_type >();
-        static auto ins = compare::low_inserter< value_type >();
+        static auto lowins = compare::low_inserter< value_type >();
         bool sorted;
         size_t end = std::max<int64_t>( 0, static_cast<int64_t>(cont.size()) - array_size );
         do
@@ -93,7 +93,7 @@ public:
     //        std::cerr << "S  " << cmp << std::endl;
             for( size_t i = 0; i < end; ++i )
             {
-                cmp = ins( cmp, cont[ i + array_size ] );
+                cmp = lowins( cmp, cont[ i + array_size ] );
      //           std::cerr << "S" << i << " " << cmp << std::endl;
                 uint32_t off = lt( cmp, cont[i] );
 
