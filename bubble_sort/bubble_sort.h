@@ -41,7 +41,7 @@ public:
             for( size_t i = 0; i < end; ++i )
             {
                 auto cmp = reinterpret_cast<simd_type*>( &cont[i+1] );
-                uint32_t off = lt( *cmp, cont[i] );
+                uint32_t off = lt( cont[i], *cmp );
 
                 if( off != 0 )
                 {
@@ -95,7 +95,7 @@ public:
             {
                 cmp = lowins( cmp, cont[ i + array_size ] );
      //           std::cerr << "S" << i << " " << cmp << std::endl;
-                uint32_t off = lt( cmp, cont[i] );
+                uint32_t off = lt( cont[i], cmp );
 
                 if( off != 0 )
                 {

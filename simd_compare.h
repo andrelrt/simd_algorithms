@@ -41,6 +41,7 @@ namespace compare{
 template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct greater_than { };
 template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct less_than { };
 template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct low_inserter {};
+template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct less_than_mask{};
 
 template<> struct low_inserter< uint32_t, traits::sse_tag >
 {
@@ -49,13 +50,28 @@ template<> struct low_inserter< uint32_t, traits::sse_tag >
     }
 };
 
-template<> struct less_than< uint32_t, traits::sse_tag >
+template<> struct less_than_mask< uint32_t, traits::sse_tag >
 {
-    inline size_t operator()( __m128i cmp, uint32_t key ) {
-        uint32_t mask = _mm_movemask_epi8( _mm_cmpgt_epi32( _mm_set1_epi32( key ), cmp ) );
-        return (mask == 0) ? 0 : (_bit_scan_reverse( mask ) >> 2) + 1;
+    inline size_t operator()( uint32_t key, __m128i cmp ) {
+        return _mm_movemask_epi8( _mm_cmplt_epi32( _mm_set1_epi32( key ), cmp ) );
     }
 };
+
+template<> struct less_than< uint32_t, traits::sse_tag >
+{
+    inline size_t operator()( uint32_t key, __m128i cmp ) {
+        static less_than_mask< uint32_t, traits::sse_tag > ltm;
+        uint32_t mask = ltm( key, cmp );
+        return 4 - (_bit_scan_reverse( mask + 1 ) >> 2);
+    }
+};
+//template<> struct less_than< uint32_t, traits::sse_tag >
+//{
+//    inline size_t operator()( __m128i cmp, uint32_t key ) {
+//        uint32_t mask = _mm_movemask_epi8( _mm_cmpgt_epi32( _mm_set1_epi32( key ), cmp ) );
+//        return (mask == 0) ? 0 : (_bit_scan_reverse( mask ) >> 2) + 1;
+//    }
+//};
 
 // SSE2 - SSE4.2
 template<> struct greater_than< uint8_t, traits::sse_tag >
