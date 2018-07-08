@@ -16,7 +16,8 @@ TEST(SimdCompareTest, LessThan)
         pCmp[ i ] = val;
         val -= 10;
     }
-    // cmp = {10, 20, 30, 40}
+    // cmp       = {10, 20, 30, 40}
+    // cmp[i], i =   3   2   1   0
 
     sac::less_than_mask< uint32_t > simdLessMask;
     EXPECT_EQ( 0xffff, simdLessMask(  5, cmp ) ) << "hex: 0x"

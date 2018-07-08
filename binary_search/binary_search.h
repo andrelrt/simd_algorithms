@@ -5,7 +5,8 @@
 #include <x86intrin.h>
 #include <array>
 #include <iterator>
-#include "simd_compare.h"
+#include <vector>
+#include "../simd_compare.h"
 
 namespace simd_algorithms{
 namespace binary_search{
@@ -30,15 +31,14 @@ public:
         for( size_t i = 0; i < array_size; ++i )
         {
             std::advance( end, step );
-            *pCmp = *end;
-            ++pCmp;
+            pCmp[array_size - i - 1] = *end;
         }
     }
 
     const_iterator find( const value_type& key ) const
     {
-        static auto gt = compare::greater_than< value_type >();
-        size_t i = gt( key, cmp_ );
+        static auto lt = compare::less_than< value_type >();
+        size_t i = lt( key, cmp_ );
         size_t step = ref_.size() / (array_size + 1);
 
         const_iterator beg = ref_.begin();
@@ -51,8 +51,7 @@ public:
         else
         {
             end = beg;
-            std::advance( end, step );
-            ++end;
+            std::advance( end, step + 1 );
         }
 
         auto first = std::lower_bound( beg, end, key );
@@ -89,16 +88,15 @@ public:
         {
             std::advance( it, step );
             ranges_[ i ] = it;
-            *pCmp = *it;
-            ++pCmp;
+            pCmp[array_size - i] = *it;
         }
         ranges_[ array_size+1 ] = std::prev(ref_.end());
     }
 
     const_iterator find( const value_type& key ) const
     {
-        static auto gt = compare::greater_than< value_type >();
-        size_t i = gt( key, cmp_ );
+        static auto lt = compare::less_than< value_type >();
+        size_t i = lt( key, cmp_ );
         auto end = std::next( ranges_[ i + 1 ] );
         auto first = std::lower_bound( ranges_[ i ], end, key );
         return (first!=end && !(key<*first)) ? first : ref_.end();
