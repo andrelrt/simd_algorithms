@@ -1,6 +1,7 @@
 #ifndef SIMD_ALGORITHMS_BINARY_SEARCH_H
 #define SIMD_ALGORITHMS_BINARY_SEARCH_H
 
+#include <iostream>
 #include <immintrin.h>
 #include <x86intrin.h>
 #include <array>
@@ -11,7 +12,7 @@
 namespace simd_algorithms{
 namespace binary_search{
 
-template< class Cont_T >
+template< class Cont_T, typename TAG_T >
 class index_nocache
 {
 public:
@@ -37,7 +38,7 @@ public:
 
     const_iterator find( const value_type& key ) const
     {
-        static auto lt = compare::less_than< value_type >();
+        static auto lt = compare::less_than_index< value_type, TAG_T >();
         size_t i = lt( key, cmp_ );
         size_t step = ref_.size() / (array_size + 1);
 
@@ -59,14 +60,14 @@ public:
     }
 
 private:
-    constexpr static size_t array_size = traits::simd_traits< value_type >::simd_size;
+    constexpr static size_t array_size = traits::simd_traits< value_type, TAG_T >::simd_size;
 
     const std::vector< value_type >& ref_;
-    typename traits::simd_traits< value_type >::simd_type cmp_;
+    typename traits::simd_traits< value_type, TAG_T >::simd_type cmp_;
 };
 
 //any container smart_step
-template< class Cont_T >
+template< class Cont_T, typename TAG_T >
 class index_cache
 {
 public:
@@ -95,7 +96,7 @@ public:
 
     const_iterator find( const value_type& key ) const
     {
-        static auto lt = compare::less_than< value_type >();
+        static auto lt = compare::less_than_index< value_type, TAG_T >();
         size_t i = lt( key, cmp_ );
         auto end = std::next( ranges_[ i + 1 ] );
         auto first = std::lower_bound( ranges_[ i ], end, key );
@@ -103,21 +104,21 @@ public:
     }
 
 private:
-    constexpr static size_t array_size = traits::simd_traits< value_type >::simd_size;
+    constexpr static size_t array_size = traits::simd_traits< value_type, TAG_T >::simd_size;
 
     const container_type& ref_;
     std::array< const_iterator, array_size + 2 > ranges_;
-    typename traits::simd_traits< value_type >::simd_type cmp_;
+    typename traits::simd_traits< value_type, TAG_T >::simd_type cmp_;
 };
 
-template <class ForwardIterator, class T>
+template <class ForwardIterator, class T, typename TAG_T >
 ForwardIterator lower_bound( ForwardIterator beg, ForwardIterator end, const T& key )
 {
     using value_type     = typename std::iterator_traits< ForwardIterator >::value_type;
     using const_iterator = ForwardIterator;
-    using simd_type      = typename traits::simd_traits< value_type >::simd_type;
+    using simd_type      = typename traits::simd_traits< value_type, TAG_T >::simd_type;
 
-    constexpr static size_t array_size = traits::simd_traits< value_type >::simd_size;
+    constexpr static size_t array_size = traits::simd_traits< value_type, TAG_T >::simd_size;
 
     size_t size = std::distance( beg, end );
     size_t step = size / (array_size + 1);
@@ -129,13 +130,12 @@ ForwardIterator lower_bound( ForwardIterator beg, ForwardIterator end, const T& 
     for( size_t i = 0; i < array_size; ++i )
     {
         std::advance( it, step );
-        *pCmp = *it;
-        ++pCmp;
+        pCmp[array_size - i - 1] = *it;
     }
 
     // N-Way search
-    static auto gt = compare::greater_than< value_type >();
-    size_t i = gt( key, cmp );
+    static auto lt = compare::less_than_index< value_type, TAG_T >();
+    size_t i = lt( key, cmp );
 
     // Recalculate iterators
     it = beg;

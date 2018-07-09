@@ -32,7 +32,7 @@ public:
 
     void sort( container_type& cont )
     {
-        static auto lt = compare::less_than< value_type >();
+        static auto lt = compare::less_than_index< value_type >();
         bool sorted;
         size_t end = std::max<int64_t>( 0, static_cast<int64_t>(cont.size()) - array_size );
         do
@@ -77,7 +77,7 @@ public:
 
     void sort( container_type& cont )
     {
-        static auto lt = compare::less_than< value_type >();
+        static auto lt = compare::less_than_index< value_type >();
         static auto lowins = compare::low_inserter< value_type >();
         bool sorted;
         size_t end = std::max<int64_t>( 0, static_cast<int64_t>(cont.size()) - array_size );
@@ -85,16 +85,9 @@ public:
         {
             sorted = true;
             auto cmp = *reinterpret_cast<simd_type*>( &cont[0] );
-            //simd_type cmp;
-            //for( size_t i = 0; i < array_size; ++i )
-            //{
-            //    cmp[ i ] = cont[ i ];
-            //}
-    //        std::cerr << "S  " << cmp << std::endl;
             for( size_t i = 0; i < end; ++i )
             {
                 cmp = lowins( cmp, cont[ i + array_size ] );
-     //           std::cerr << "S" << i << " " << cmp << std::endl;
                 uint32_t off = lt( cont[i], cmp );
 
                 if( off != 0 )

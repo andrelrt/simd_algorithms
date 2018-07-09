@@ -38,8 +38,8 @@ template< typename ValueType_T > struct simd_traits< ValueType_T, avx_tag >
 //
 namespace compare{
 
-template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct greater_than { };
-template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct less_than { };
+//template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct greater_than { };
+template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct less_than_index { };
 template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct low_inserter {};
 template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct less_than_mask{};
 
@@ -57,14 +57,32 @@ template<> struct less_than_mask< uint32_t, traits::sse_tag >
     }
 };
 
-template<> struct less_than< uint32_t, traits::sse_tag >
+template<> struct less_than_mask< uint32_t, traits::avx_tag >
 {
-    inline size_t operator()( uint32_t key, __m128i cmp ) {
-        static less_than_mask< uint32_t, traits::sse_tag > ltm;
-        uint32_t mask = ltm( key, cmp );
-        return 4 - (_bit_scan_reverse( mask + 1 ) >> 2);
+    inline uint32_t operator()( uint32_t key, __m256i cmp ) {
+        return _mm256_movemask_epi8( _mm256_cmpgt_epi32( cmp, _mm256_set1_epi32( key ) ) );
     }
 };
+
+template<> struct less_than_index< uint32_t, traits::sse_tag >
+{
+    inline uint64_t operator()( uint32_t key, __m128i cmp ) {
+        static less_than_mask< uint32_t, traits::sse_tag > ltm;
+        return 4 - (_bit_scan_reverse( ltm( key, cmp ) + 1 ) >> 2);
+    }
+};
+
+template<> struct less_than_index< uint32_t, traits::avx_tag >
+{
+    inline size_t operator()( uint32_t key, __m256i cmp ) {
+        static less_than_mask< uint32_t, traits::avx_tag > ltm;
+        auto mask = ltm( key, cmp );
+        return (mask == 0) ? 8 : 8 - ((_bit_scan_reverse( mask ) + 1) >> 2);
+    }
+};
+
+
+
 //template<> struct less_than< uint32_t, traits::sse_tag >
 //{
 //    inline size_t operator()( __m128i cmp, uint32_t key ) {
@@ -73,71 +91,71 @@ template<> struct less_than< uint32_t, traits::sse_tag >
 //    }
 //};
 
-// SSE2 - SSE4.2
-template<> struct greater_than< uint8_t, traits::sse_tag >
-{
-    inline size_t operator()( uint8_t key, __m128i cmp ) {
-        uint32_t mask = _mm_movemask_epi8( _mm_cmpgt_epi8( _mm_set1_epi8( key ), cmp ) );
-        return _bit_scan_reverse( mask + 1 );
-    }
-};
-
-template<> struct greater_than< uint16_t, traits::sse_tag >
-{
-    inline size_t operator()( uint16_t key, __m128i cmp ) {
-        uint32_t mask = _mm_movemask_epi8( _mm_cmpgt_epi16( _mm_set1_epi16( key ), cmp ) );
-        return _bit_scan_reverse( mask + 1 ) >> 1;
-    }
-};
-
-template<> struct greater_than< uint32_t, traits::sse_tag >
-{
-    inline size_t operator()( uint32_t key, __m128i cmp ) {
-        uint32_t mask = _mm_movemask_epi8( _mm_cmpgt_epi32( _mm_set1_epi32( key ), cmp ) );
-        return _bit_scan_reverse( mask + 1 ) >> 2;
-    }
-};
-
-template<> struct greater_than< uint64_t, traits::sse_tag >
-{
-    inline size_t operator()( uint64_t key, __m128i cmp ) {
-        uint32_t mask = _mm_movemask_epi8( _mm_cmpgt_epi64( _mm_set1_epi64x( key ), cmp ) );
-        return _bit_scan_reverse( mask + 1 ) >> 3;
-    }
-};
-
-// AVX - AVX2
-template<> struct greater_than< uint8_t, traits::avx_tag >
-{
-    inline size_t operator()( uint8_t key, __m256i cmp ) {
-        uint32_t mask = _mm256_movemask_epi8( _mm256_cmpgt_epi8( _mm256_set1_epi8( key ), cmp ) );
-        return (mask == 0) ? 0 : (_bit_scan_reverse( mask ) + 1);
-    }
-};
-
-template<> struct greater_than< uint16_t, traits::avx_tag >
-{
-    inline size_t operator()( uint16_t key, __m256i cmp ) {
-        uint32_t mask = _mm256_movemask_epi8( _mm256_cmpgt_epi16( _mm256_set1_epi16( key ), cmp ) );
-        return (mask == 0) ? 0 : (_bit_scan_reverse( mask ) + 1) >> 1;
-    }
-};
-
-template<> struct greater_than< uint32_t, traits::avx_tag >
-{
-    inline size_t operator()( uint32_t key, __m256i cmp ) {
-        uint32_t mask = _mm256_movemask_epi8( _mm256_cmpgt_epi32( _mm256_set1_epi32( key ), cmp ) );
-        return (mask == 0) ? 0 : (_bit_scan_reverse( mask ) + 1) >> 2;
-    }
-};
-
-template<> struct greater_than< uint64_t, traits::avx_tag >
-{
-    inline size_t operator()( uint64_t key, __m256i cmp ) {
-        uint32_t mask = _mm256_movemask_epi8( _mm256_cmpgt_epi64( _mm256_set1_epi64x( key ), cmp ) );
-        return (mask == 0) ? 0 : (_bit_scan_reverse( mask ) + 1) >> 3;
-    }
-};
+//// SSE2 - SSE4.2
+//template<> struct greater_than< uint8_t, traits::sse_tag >
+//{
+//    inline size_t operator()( uint8_t key, __m128i cmp ) {
+//        uint32_t mask = _mm_movemask_epi8( _mm_cmpgt_epi8( _mm_set1_epi8( key ), cmp ) );
+//        return _bit_scan_reverse( mask + 1 );
+//    }
+//};
+//
+//template<> struct greater_than< uint16_t, traits::sse_tag >
+//{
+//    inline size_t operator()( uint16_t key, __m128i cmp ) {
+//        uint32_t mask = _mm_movemask_epi8( _mm_cmpgt_epi16( _mm_set1_epi16( key ), cmp ) );
+//        return _bit_scan_reverse( mask + 1 ) >> 1;
+//    }
+//};
+//
+//template<> struct greater_than< uint32_t, traits::sse_tag >
+//{
+//    inline size_t operator()( uint32_t key, __m128i cmp ) {
+//        uint32_t mask = _mm_movemask_epi8( _mm_cmpgt_epi32( _mm_set1_epi32( key ), cmp ) );
+//        return _bit_scan_reverse( mask + 1 ) >> 2;
+//    }
+//};
+//
+//template<> struct greater_than< uint64_t, traits::sse_tag >
+//{
+//    inline size_t operator()( uint64_t key, __m128i cmp ) {
+//        uint32_t mask = _mm_movemask_epi8( _mm_cmpgt_epi64( _mm_set1_epi64x( key ), cmp ) );
+//        return _bit_scan_reverse( mask + 1 ) >> 3;
+//    }
+//};
+//
+//// AVX - AVX2
+//template<> struct greater_than< uint8_t, traits::avx_tag >
+//{
+//    inline size_t operator()( uint8_t key, __m256i cmp ) {
+//        uint32_t mask = _mm256_movemask_epi8( _mm256_cmpgt_epi8( _mm256_set1_epi8( key ), cmp ) );
+//        return (mask == 0) ? 0 : (_bit_scan_reverse( mask ) + 1);
+//    }
+//};
+//
+//template<> struct greater_than< uint16_t, traits::avx_tag >
+//{
+//    inline size_t operator()( uint16_t key, __m256i cmp ) {
+//        uint32_t mask = _mm256_movemask_epi8( _mm256_cmpgt_epi16( _mm256_set1_epi16( key ), cmp ) );
+//        return (mask == 0) ? 0 : (_bit_scan_reverse( mask ) + 1) >> 1;
+//    }
+//};
+//
+//template<> struct greater_than< uint32_t, traits::avx_tag >
+//{
+//    inline size_t operator()( uint32_t key, __m256i cmp ) {
+//        uint32_t mask = _mm256_movemask_epi8( _mm256_cmpgt_epi32( _mm256_set1_epi32( key ), cmp ) );
+//        return (mask == 0) ? 0 : (_bit_scan_reverse( mask ) + 1) >> 2;
+//    }
+//};
+//
+//template<> struct greater_than< uint64_t, traits::avx_tag >
+//{
+//    inline size_t operator()( uint64_t key, __m256i cmp ) {
+//        uint32_t mask = _mm256_movemask_epi8( _mm256_cmpgt_epi64( _mm256_set1_epi64x( key ), cmp ) );
+//        return (mask == 0) ? 0 : (_bit_scan_reverse( mask ) + 1) >> 3;
+//    }
+//};
 
 }} // namespace simd_algorithms::compare
 
