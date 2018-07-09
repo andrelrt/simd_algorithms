@@ -102,7 +102,7 @@ size_t bench( const std::string& name, size_t size, size_t loop )
     return timer.elapsed().wall;
 }
 
-namespace sat = simd_algorithms::traits;
+namespace sa = simd_algorithms;
 int main(int argc, char* /*argv*/[])
 {
     constexpr size_t runSize = 0x00400000;
@@ -120,27 +120,27 @@ int main(int argc, char* /*argv*/[])
     {
         size_t base = bench< std::vector< uint32_t >,
                              container_only,
-                             sat::sse_tag >( "lower_bound ........", runSize, loop );
+                             sa::sse_tag >( "lower_bound ........", runSize, loop );
 
         size_t nocache = bench< std::vector< uint32_t >,
                                 simd_algorithms::binary_search::index_nocache,
-                                sat::sse_tag >( "index_nocache SSE...", runSize, loop );
+                                sa::sse_tag >( "index_nocache SSE...", runSize, loop );
         size_t cache = bench< std::vector< uint32_t >,
                               simd_algorithms::binary_search::index_cache,
-                              sat::sse_tag >( "index_cache SSE.....", runSize, loop );
+                              sa::sse_tag >( "index_cache SSE.....", runSize, loop );
         size_t simdlb = bench< std::vector< uint32_t >,
                                container_simd_lb,
-                               sat::sse_tag >( "SIMD lower_bound SSE", runSize, loop );
+                               sa::sse_tag >( "SIMD lower_bound SSE", runSize, loop );
 
         size_t nocache2 = bench< std::vector< uint32_t >,
                                 simd_algorithms::binary_search::index_nocache, 
-                                sat::avx_tag >( "index_nocache AVX...", runSize, loop );
+                                sa::avx_tag >( "index_nocache AVX...", runSize, loop );
         size_t cache2 = bench< std::vector< uint32_t >,
                                simd_algorithms::binary_search::index_cache,
-                               sat::avx_tag >( "index_cache AVX.....", runSize, loop );
+                               sa::avx_tag >( "index_cache AVX.....", runSize, loop );
         size_t simdlb2 = bench< std::vector< uint32_t >,
                                 container_simd_lb,
-                                sat::avx_tag >( "SIMD lower_bound AVX", runSize, loop );
+                                sa::avx_tag >( "SIMD lower_bound AVX", runSize, loop );
 
         if( g_verbose )
         {

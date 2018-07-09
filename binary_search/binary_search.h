@@ -38,8 +38,7 @@ public:
 
     const_iterator find( const value_type& key ) const
     {
-        static auto lt = compare::less_than_index< value_type, TAG_T >();
-        size_t i = lt( key, cmp_ );
+        size_t i = less_than_index< value_type, TAG_T >( key, cmp_ );
         size_t step = ref_.size() / (array_size + 1);
 
         const_iterator beg = ref_.begin();
@@ -60,10 +59,10 @@ public:
     }
 
 private:
-    constexpr static size_t array_size = traits::simd_traits< value_type, TAG_T >::simd_size;
+    constexpr static size_t array_size = traits< value_type, TAG_T >::simd_size;
 
     const std::vector< value_type >& ref_;
-    typename traits::simd_traits< value_type, TAG_T >::simd_type cmp_;
+    typename traits< value_type, TAG_T >::simd_type cmp_;
 };
 
 //any container smart_step
@@ -96,19 +95,18 @@ public:
 
     const_iterator find( const value_type& key ) const
     {
-        static auto lt = compare::less_than_index< value_type, TAG_T >();
-        size_t i = lt( key, cmp_ );
+        size_t i = less_than_index< value_type, TAG_T >( key, cmp_ );
         auto end = std::next( ranges_[ i + 1 ] );
         auto first = std::lower_bound( ranges_[ i ], end, key );
         return (first!=end && !(key<*first)) ? first : ref_.end();
     }
 
 private:
-    constexpr static size_t array_size = traits::simd_traits< value_type, TAG_T >::simd_size;
+    constexpr static size_t array_size = traits< value_type, TAG_T >::simd_size;
 
     const container_type& ref_;
     std::array< const_iterator, array_size + 2 > ranges_;
-    typename traits::simd_traits< value_type, TAG_T >::simd_type cmp_;
+    typename traits< value_type, TAG_T >::simd_type cmp_;
 };
 
 template <class ForwardIterator, class T, typename TAG_T >
@@ -116,9 +114,9 @@ ForwardIterator lower_bound( ForwardIterator beg, ForwardIterator end, const T& 
 {
     using value_type     = typename std::iterator_traits< ForwardIterator >::value_type;
     using const_iterator = ForwardIterator;
-    using simd_type      = typename traits::simd_traits< value_type, TAG_T >::simd_type;
+    using simd_type      = typename traits< value_type, TAG_T >::simd_type;
 
-    constexpr static size_t array_size = traits::simd_traits< value_type, TAG_T >::simd_size;
+    constexpr static size_t array_size = traits< value_type, TAG_T >::simd_size;
 
     size_t size = std::distance( beg, end );
     size_t step = size / (array_size + 1);
@@ -134,8 +132,7 @@ ForwardIterator lower_bound( ForwardIterator beg, ForwardIterator end, const T& 
     }
 
     // N-Way search
-    static auto lt = compare::less_than_index< value_type, TAG_T >();
-    size_t i = lt( key, cmp );
+    size_t i = less_than_index< value_type, TAG_T >( key, cmp );
 
     // Recalculate iterators
     it = beg;

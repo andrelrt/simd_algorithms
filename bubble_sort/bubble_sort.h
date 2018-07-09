@@ -28,11 +28,10 @@ class bubble
 public:
 	using container_type = Cont_T;
     using value_type     = typename container_type::value_type;
-    using simd_type      = typename traits::simd_traits< value_type >::simd_type;
+    using simd_type      = typename traits< value_type >::simd_type;
 
     void sort( container_type& cont )
     {
-        static auto lt = compare::less_than_index< value_type >();
         bool sorted;
         size_t end = std::max<int64_t>( 0, static_cast<int64_t>(cont.size()) - array_size );
         do
@@ -41,7 +40,7 @@ public:
             for( size_t i = 0; i < end; ++i )
             {
                 auto cmp = reinterpret_cast<simd_type*>( &cont[i+1] );
-                uint32_t off = lt( cont[i], *cmp );
+                uint32_t off = less_than_index( cont[i], *cmp );
 
                 if( off != 0 )
                 {
@@ -63,7 +62,7 @@ public:
     }
 
 private:
-    constexpr static size_t array_size = traits::simd_traits< value_type >::simd_size;
+    constexpr static size_t array_size = traits< value_type >::simd_size;
 };
 
 
@@ -73,12 +72,10 @@ class bubble2
 public:
 	using container_type = Cont_T;
     using value_type     = typename container_type::value_type;
-    using simd_type      = typename traits::simd_traits< value_type >::simd_type;
+    using simd_type      = typename traits< value_type >::simd_type;
 
     void sort( container_type& cont )
     {
-        static auto lt = compare::less_than_index< value_type >();
-        static auto lowins = compare::low_inserter< value_type >();
         bool sorted;
         size_t end = std::max<int64_t>( 0, static_cast<int64_t>(cont.size()) - array_size );
         do
@@ -87,8 +84,8 @@ public:
             auto cmp = *reinterpret_cast<simd_type*>( &cont[0] );
             for( size_t i = 0; i < end; ++i )
             {
-                cmp = lowins( cmp, cont[ i + array_size ] );
-                uint32_t off = lt( cont[i], cmp );
+                cmp = low_insert( cmp, cont[ i + array_size ] );
+                uint32_t off = less_than_index( cont[i], cmp );
 
                 if( off != 0 )
                 {
@@ -110,7 +107,7 @@ public:
     }
 
 private:
-    constexpr static size_t array_size = traits::simd_traits< value_type >::simd_size;
+    constexpr static size_t array_size = traits< value_type >::simd_size;
 };
 
 }} // namespace simd_algoriths::bubble_sort

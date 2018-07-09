@@ -8,155 +8,98 @@
 
 namespace simd_algorithms {
 
-namespace traits {
 struct sse_tag {};
 struct avx_tag {};
 
-template< typename ValueType_T, typename Tag_T = sse_tag > struct simd_traits { };
+// Traits
+// ------------------------------------------------------------------------------------------------
+template< typename ValueType_T, typename Tag_T = sse_tag > struct traits { };
 
-template< typename ValueType_T > struct simd_traits< ValueType_T, sse_tag >
+template< typename ValueType_T > struct traits< ValueType_T, sse_tag >
 {
     using simd_type = __m128i;
     constexpr static size_t simd_size = sizeof(simd_type)/sizeof(ValueType_T);
 
-    static typename std::enable_if< std::is_same< ValueType_T,
-                                                  uint32_t >::value,
+    static typename std::enable_if< std::is_same< ValueType_T, uint32_t >::value,
                                     simd_type >::type max()
     {
         return _mm_set1_epi32( std::numeric_limits<uint32_t>::max() );
     }
+
+    static simd_type zero()
+    {
+        return _mm_setzero_si128();
+    }
 };
 
-template< typename ValueType_T > struct simd_traits< ValueType_T, avx_tag >
+template< typename ValueType_T > struct traits< ValueType_T, avx_tag >
 {
     using simd_type = __m256i;
     constexpr static size_t simd_size = sizeof(simd_type)/sizeof(ValueType_T);
-};
 
-} // namespace traits
+    static typename std::enable_if< std::is_same< ValueType_T, uint32_t >::value,
+                                    simd_type >::type max()
+    {
+        return _mm256_set1_epi32( std::numeric_limits<uint32_t>::max() );
+    }
 
-//
-namespace compare{
-
-//template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct greater_than { };
-template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct less_than_index { };
-template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct low_inserter {};
-template< typename ValueType_T, typename Tag_T = traits::sse_tag > struct less_than_mask{};
-
-template<> struct low_inserter< uint32_t, traits::sse_tag >
-{
-    inline __m128i operator()( __m128i cmp, uint32_t key ) {
-        return _mm_insert_epi32( _mm_srli_si128( cmp, 4 ), key, 3 );
+    static simd_type zero()
+    {
+        return _mm256_setzero_si256();
     }
 };
 
-template<> struct less_than_mask< uint32_t, traits::sse_tag >
+// Less than mask
+// ------------------------------------------------------------------------------------------------
+template< typename ValueType_T, typename Tag_T = sse_tag >
+inline uint32_t less_than_mask( ValueType_T,
+                              typename traits< ValueType_T, Tag_T >::simd_type )
 {
-    inline size_t operator()( uint32_t key, __m128i cmp ) {
-        return _mm_movemask_epi8( _mm_cmplt_epi32( _mm_set1_epi32( key ), cmp ) );
-    }
-};
+    return 0;
+}
 
-template<> struct less_than_mask< uint32_t, traits::avx_tag >
+template<> inline uint32_t
+less_than_mask< uint32_t, sse_tag >( uint32_t key, __m128i cmp )
 {
-    inline uint32_t operator()( uint32_t key, __m256i cmp ) {
-        return _mm256_movemask_epi8( _mm256_cmpgt_epi32( cmp, _mm256_set1_epi32( key ) ) );
-    }
-};
+    return _mm_movemask_epi8( _mm_cmplt_epi32( _mm_set1_epi32( key ), cmp ) );
+}
 
-template<> struct less_than_index< uint32_t, traits::sse_tag >
+template<> inline uint32_t
+less_than_mask< uint32_t, avx_tag >( uint32_t key, __m256i cmp )
 {
-    inline uint64_t operator()( uint32_t key, __m128i cmp ) {
-        static less_than_mask< uint32_t, traits::sse_tag > ltm;
-        return 4 - (_bit_scan_reverse( ltm( key, cmp ) + 1 ) >> 2);
-    }
-};
+    // There is no _mm256_cmplt_epi32
+    return _mm256_movemask_epi8( _mm256_cmpgt_epi32( cmp, _mm256_set1_epi32( key ) ) );
+}
 
-template<> struct less_than_index< uint32_t, traits::avx_tag >
+// Less than index
+// ------------------------------------------------------------------------------------------------
+template< typename ValueType_T, typename Tag_T = sse_tag >
+inline uint32_t less_than_index( ValueType_T val,
+                                 typename traits< ValueType_T, Tag_T >::simd_type simdVal )
 {
-    inline size_t operator()( uint32_t key, __m256i cmp ) {
-        static less_than_mask< uint32_t, traits::avx_tag > ltm;
-        auto mask = ltm( key, cmp );
-        return (mask == 0) ? 8 : 8 - ((_bit_scan_reverse( mask ) + 1) >> 2);
-    }
-};
+    auto mask = less_than_mask< ValueType_T, Tag_T >( val, simdVal );
+    return (mask == 0) 
+        ? traits< ValueType_T, Tag_T >::simd_size 
+        : traits< ValueType_T, Tag_T >::simd_size - 
+            ( (_bit_scan_reverse( mask ) + 1) / sizeof(ValueType_T) );
+}
 
 
+// Low insert
+// ------------------------------------------------------------------------------------------------
+template< typename ValueType_T, typename Tag_T = sse_tag >
+inline typename traits< ValueType_T, Tag_T >::simd_type
+low_insert( typename traits< ValueType_T, Tag_T >::simd_type, ValueType_T )
+{
+    return traits< ValueType_T, Tag_T >::zero();
+}
 
-//template<> struct less_than< uint32_t, traits::sse_tag >
-//{
-//    inline size_t operator()( __m128i cmp, uint32_t key ) {
-//        uint32_t mask = _mm_movemask_epi8( _mm_cmpgt_epi32( _mm_set1_epi32( key ), cmp ) );
-//        return (mask == 0) ? 0 : (_bit_scan_reverse( mask ) >> 2) + 1;
-//    }
-//};
+template<> inline __m128i
+low_insert< uint32_t, sse_tag >( __m128i vec, uint32_t val )
+{
+    return _mm_insert_epi32( _mm_srli_si128( vec, 4 ), val, 3 );
+}
 
-//// SSE2 - SSE4.2
-//template<> struct greater_than< uint8_t, traits::sse_tag >
-//{
-//    inline size_t operator()( uint8_t key, __m128i cmp ) {
-//        uint32_t mask = _mm_movemask_epi8( _mm_cmpgt_epi8( _mm_set1_epi8( key ), cmp ) );
-//        return _bit_scan_reverse( mask + 1 );
-//    }
-//};
-//
-//template<> struct greater_than< uint16_t, traits::sse_tag >
-//{
-//    inline size_t operator()( uint16_t key, __m128i cmp ) {
-//        uint32_t mask = _mm_movemask_epi8( _mm_cmpgt_epi16( _mm_set1_epi16( key ), cmp ) );
-//        return _bit_scan_reverse( mask + 1 ) >> 1;
-//    }
-//};
-//
-//template<> struct greater_than< uint32_t, traits::sse_tag >
-//{
-//    inline size_t operator()( uint32_t key, __m128i cmp ) {
-//        uint32_t mask = _mm_movemask_epi8( _mm_cmpgt_epi32( _mm_set1_epi32( key ), cmp ) );
-//        return _bit_scan_reverse( mask + 1 ) >> 2;
-//    }
-//};
-//
-//template<> struct greater_than< uint64_t, traits::sse_tag >
-//{
-//    inline size_t operator()( uint64_t key, __m128i cmp ) {
-//        uint32_t mask = _mm_movemask_epi8( _mm_cmpgt_epi64( _mm_set1_epi64x( key ), cmp ) );
-//        return _bit_scan_reverse( mask + 1 ) >> 3;
-//    }
-//};
-//
-//// AVX - AVX2
-//template<> struct greater_than< uint8_t, traits::avx_tag >
-//{
-//    inline size_t operator()( uint8_t key, __m256i cmp ) {
-//        uint32_t mask = _mm256_movemask_epi8( _mm256_cmpgt_epi8( _mm256_set1_epi8( key ), cmp ) );
-//        return (mask == 0) ? 0 : (_bit_scan_reverse( mask ) + 1);
-//    }
-//};
-//
-//template<> struct greater_than< uint16_t, traits::avx_tag >
-//{
-//    inline size_t operator()( uint16_t key, __m256i cmp ) {
-//        uint32_t mask = _mm256_movemask_epi8( _mm256_cmpgt_epi16( _mm256_set1_epi16( key ), cmp ) );
-//        return (mask == 0) ? 0 : (_bit_scan_reverse( mask ) + 1) >> 1;
-//    }
-//};
-//
-//template<> struct greater_than< uint32_t, traits::avx_tag >
-//{
-//    inline size_t operator()( uint32_t key, __m256i cmp ) {
-//        uint32_t mask = _mm256_movemask_epi8( _mm256_cmpgt_epi32( _mm256_set1_epi32( key ), cmp ) );
-//        return (mask == 0) ? 0 : (_bit_scan_reverse( mask ) + 1) >> 2;
-//    }
-//};
-//
-//template<> struct greater_than< uint64_t, traits::avx_tag >
-//{
-//    inline size_t operator()( uint64_t key, __m256i cmp ) {
-//        uint32_t mask = _mm256_movemask_epi8( _mm256_cmpgt_epi64( _mm256_set1_epi64x( key ), cmp ) );
-//        return (mask == 0) ? 0 : (_bit_scan_reverse( mask ) + 1) >> 3;
-//    }
-//};
-
-}} // namespace simd_algorithms::compare
+} //namespace simd_algorithms
 
 #endif // SIMD_ALGORITHMS_BINARY_SEARCH_H
