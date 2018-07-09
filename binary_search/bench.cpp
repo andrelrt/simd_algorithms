@@ -106,7 +106,7 @@ namespace sat = simd_algorithms::traits;
 int main(int argc, char* /*argv*/[])
 {
     constexpr size_t runSize = 0x00400000;
-    constexpr size_t loop = 10;
+    constexpr size_t loop = 5;
     if( argc > 1 )
     {
         g_verbose = false;
