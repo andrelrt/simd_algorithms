@@ -20,7 +20,7 @@ public:
     using value_type     = typename container_type::value_type;
     using const_iterator = typename container_type::const_iterator;
 
-    index_nocache( const std::vector< value_type >& ref )
+    index_nocache( const container_type& ref )
         : ref_( ref ){}
 
     void build_index()
@@ -61,7 +61,7 @@ public:
 private:
     constexpr static size_t array_size = traits< value_type, TAG_T >::simd_size;
 
-    const std::vector< value_type >& ref_;
+    const container_type& ref_;
     typename traits< value_type, TAG_T >::simd_type cmp_;
 };
 
