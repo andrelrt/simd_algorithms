@@ -38,7 +38,7 @@ public:
 
     const_iterator find( const value_type& key ) const
     {
-        size_t i = less_than_index< value_type, TAG_T >( key, cmp_ );
+        size_t i = greater_than_index< value_type, TAG_T >( key, cmp_ );
         size_t step = ref_.size() / (array_size + 1);
 
         const_iterator beg = ref_.begin();
@@ -95,7 +95,7 @@ public:
 
     const_iterator find( const value_type& key ) const
     {
-        size_t i = less_than_index< value_type, TAG_T >( key, cmp_ );
+        size_t i = greater_than_index< value_type, TAG_T >( key, cmp_ );
         auto end = std::next( ranges_[ i + 1 ] );
         auto first = std::lower_bound( ranges_[ i ], end, key );
         return (first!=end && !(key<*first)) ? first : ref_.end();
@@ -132,7 +132,7 @@ ForwardIterator lower_bound( ForwardIterator beg, ForwardIterator end, const T& 
     }
 
     // N-Way search
-    size_t i = less_than_index< value_type, TAG_T >( key, cmp );
+    size_t i = greater_than_index< value_type, TAG_T >( key, cmp );
 
     // Recalculate iterators
     it = beg;

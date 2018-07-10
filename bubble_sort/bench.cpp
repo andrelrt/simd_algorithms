@@ -94,10 +94,10 @@ int main(int /*argc*/, char* /*argv*/[])
     std::cout << "\nsize: 0x0001'0000\n\n";
     while( 1 )
     {
-        size_t stlsort = bench< std::vector< uint32_t >, stl_sort>( "STL sort .........", 0x00010000, 1 );
-        size_t bsort = bench< std::vector< uint32_t >, basic_bubble_sort>( "Bubble sort ......", 0x00010000, 1 );
-        size_t simdsort = bench< std::vector< uint32_t >, simd_algorithms::sort::bubble>( "SIMD Bubble sort .", 0x00010000, 1 );
-        size_t simdsort2 = bench< std::vector< uint32_t >, simd_algorithms::sort::bubble2>( "SIMD Bubble2 sort ", 0x00010000, 1 );
+        size_t stlsort = bench< std::vector< int32_t >, stl_sort>( "STL sort .........", 0x00010000, 1 );
+        size_t bsort = bench< std::vector< int32_t >, basic_bubble_sort>( "Bubble sort ......", 0x00010000, 1 );
+        size_t simdsort = bench< std::vector< int32_t >, simd_algorithms::sort::bubble>( "SIMD Bubble sort .", 0x00010000, 1 );
+        size_t simdsort2 = bench< std::vector< int32_t >, simd_algorithms::sort::bubble2>( "SIMD Bubble2 sort ", 0x00010000, 1 );
 
 
         std::cout << std::endl << "SIMD Speed up ......: " << std::fixed << std::setprecision(2)

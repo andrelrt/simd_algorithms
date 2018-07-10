@@ -1,8 +1,37 @@
 #ifndef SIMD_ALGORITHMS_NWAY_TREE_H
 #define SIMD_ALGORITHMS_NWAY_TREE_H
 
+#include <iostream>
+#include <iomanip>
 #include <vector>
 #include "../simd_compare.h"
+
+std::ostream& operator<<( std::ostream& out, __m128i val )
+{
+    uint32_t* pval = reinterpret_cast<uint32_t*>( &val );
+    out << std::hex << "("
+       << std::setw(8) << std::setfill('0') << pval[0] << ","
+       << std::setw(8) << std::setfill('0') << pval[1] << ","
+       << std::setw(8) << std::setfill('0') << pval[2] << ","
+       << std::setw(8) << std::setfill('0') << pval[3] << ")";
+    return out;
+}
+
+std::ostream& operator<<( std::ostream& out, __m256i val )
+{
+    uint32_t* pval = reinterpret_cast<uint32_t*>( &val );
+    out << std::hex << "("
+       << std::setw(8) << std::setfill('0') << pval[0] << ","
+       << std::setw(8) << std::setfill('0') << pval[1] << ","
+       << std::setw(8) << std::setfill('0') << pval[2] << ","
+       << std::setw(8) << std::setfill('0') << pval[3] << ","
+       << std::setw(8) << std::setfill('0') << pval[4] << ","
+       << std::setw(8) << std::setfill('0') << pval[5] << ","
+       << std::setw(8) << std::setfill('0') << pval[6] << ","
+       << std::setw(8) << std::setfill('0') << pval[7] << ")";
+    return out;
+}
+
 
 namespace simd_algorithms{
 namespace nway_tree{
@@ -29,12 +58,22 @@ public:
         uint32_t li;
         for( int i = 0; i < tree_.size(); ++i )
         {
-            li = less_than_index< value_type, TAG_T >( key, *tree_[i].get_simd( idx ) );
+            li = greater_than_index< value_type, TAG_T >( key, *tree_[i].get_simd( idx ) );
+            auto debugmask = greater_than_mask< value_type, TAG_T >( key, *tree_[i].get_simd( idx ) );
+            std::cout << i << " - " << idx
+                      << "," << std::setw(8) << std::setfill('0') << key 
+                      << "," << *tree_[i].get_simd( idx )
+                      << "," << li
+                      << ",0x" << std::setw(8) << std::setfill('0') << debugmask
+                      << std::endl;
             idx = idx * (array_size+1) + li;
         }
 
         const simd_type* cmp = reinterpret_cast< const simd_type* >( &ref_[ idx * array_size ] );
+        std::cout << "equal - " << idx << "," << key << "," << *cmp << std::endl;
         uint32_t mask = equal_mask< value_type, TAG_T >( key, *cmp );
+
+        std::cout << "mask: 0x" << std::setw(8) << std::setfill('0') << mask << std::endl;
         if( mask == 0 )
         {
             return ref_.end();
@@ -61,12 +100,21 @@ private:
         void adjust()
         {
             size_t size = keys_.size() / array_size;
+//            if( keys_.size() > size * array_size )
+//            {
+//                size_t cnt = array_size - (keys_.size() - size * array_size);
+//                auto it = keys_.begin();
+//                std::advance( it, size * array_size );
+//
+//                for( size_t i = 0; i < cnt; ++i )
+//                {
+//                    keys_.insert( it, std::numeric_limits< value_type >::min() );
+//                }
+//            }
             if( keys_.size() > size * array_size )
-            {
                 ++size;
-            }
             size *= array_size;
-            keys_.resize( size, std::numeric_limits< value_type >::max() );
+            keys_.resize( size, 0x7fffffff );
             for( size_t i = 0; i < keys_.size(); i += array_size )
             {
                 for( size_t j = 0; j < array_size / 2; ++j )
@@ -94,6 +142,13 @@ private:
         build_index( level.keys_ );
 
         level.adjust();
+//        std::cout << tree_.size() << " - ";
+//        for( auto&& i : level.keys_ )
+//        {
+//            std::cout << i << ",";
+//        }
+//        std::cout << std::endl;
+
         tree_.emplace_back( std::move( level ) );
         return;
     }

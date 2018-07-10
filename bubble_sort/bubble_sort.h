@@ -40,7 +40,7 @@ public:
             for( size_t i = 0; i < end; ++i )
             {
                 auto cmp = reinterpret_cast<simd_type*>( &cont[i+1] );
-                uint32_t off = less_than_index( cont[i], *cmp );
+                uint32_t off = greater_than_index( cont[i], *cmp );
 
                 if( off != 0 )
                 {
@@ -85,7 +85,7 @@ public:
             for( size_t i = 0; i < end; ++i )
             {
                 cmp = low_insert( cmp, cont[ i + array_size ] );
-                uint32_t off = less_than_index( cont[i], cmp );
+                uint32_t off = greater_than_index( cont[i], cmp );
 
                 if( off != 0 )
                 {

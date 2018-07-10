@@ -20,10 +20,10 @@ template< typename ValueType_T > struct traits< ValueType_T, sse_tag >
     using simd_type = __m128i;
     constexpr static size_t simd_size = sizeof(simd_type)/sizeof(ValueType_T);
 
-    static typename std::enable_if< std::is_same< ValueType_T, uint32_t >::value,
+    static typename std::enable_if< std::is_same< ValueType_T, int32_t >::value,
                                     simd_type >::type max()
     {
-        return _mm_set1_epi32( std::numeric_limits<uint32_t>::max() );
+        return _mm_set1_epi32( std::numeric_limits<int32_t>::max() );
     }
 
     static typename std::enable_if< std::is_integral< ValueType_T >::value,
@@ -38,10 +38,10 @@ template< typename ValueType_T > struct traits< ValueType_T, avx_tag >
     using simd_type = __m256i;
     constexpr static size_t simd_size = sizeof(simd_type)/sizeof(ValueType_T);
 
-    static typename std::enable_if< std::is_same< ValueType_T, uint32_t >::value,
+    static typename std::enable_if< std::is_same< ValueType_T, int32_t >::value,
                                     simd_type >::type max()
     {
-        return _mm256_set1_epi32( std::numeric_limits<uint32_t>::max() );
+        return _mm256_set1_epi32( std::numeric_limits<int32_t>::max() );
     }
 
     static typename std::enable_if< std::is_integral< ValueType_T >::value,
@@ -57,60 +57,56 @@ template< typename ValueType_T, typename Tag_T >
 inline uint32_t mask_to_index( uint32_t mask )
 {
     return (mask == 0)
-        ? traits< ValueType_T, Tag_T >::simd_size
-        : traits< ValueType_T, Tag_T >::simd_size -
-            ( (_bit_scan_reverse( mask ) + 1) / sizeof(ValueType_T) );
+        ? 0
+        : (_bit_scan_reverse( mask ) + 1) / sizeof(ValueType_T);
 }
 
-// Less than mask
+// Greater than mask
 // ------------------------------------------------------------------------------------------------
 template< typename ValueType_T, typename Tag_T = sse_tag >
-inline uint32_t less_than_mask( ValueType_T,
-                              typename traits< ValueType_T, Tag_T >::simd_type )
+inline uint32_t greater_than_mask( ValueType_T, typename traits< ValueType_T, Tag_T >::simd_type )
 {
     return 0;
 }
 
 template<> inline uint32_t
-less_than_mask< uint32_t, sse_tag >( uint32_t key, __m128i cmp )
+greater_than_mask< int32_t, sse_tag >( int32_t key, __m128i cmp )
 {
-    return _mm_movemask_epi8( _mm_cmplt_epi32( _mm_set1_epi32( key ), cmp ) );
+    return _mm_movemask_epi8( _mm_cmpgt_epi32( _mm_set1_epi32( key ), cmp ) );
 }
 
 template<> inline uint32_t
-less_than_mask< uint32_t, avx_tag >( uint32_t key, __m256i cmp )
+greater_than_mask< int32_t, avx_tag >( int32_t key, __m256i cmp )
 {
-    // There is no _mm256_cmplt_epi32
-    return _mm256_movemask_epi8( _mm256_cmpgt_epi32( cmp, _mm256_set1_epi32( key ) ) );
+    return _mm256_movemask_epi8( _mm256_cmpgt_epi32( _mm256_set1_epi32( key ), cmp ) );
 }
 
 // Less than index
 // ------------------------------------------------------------------------------------------------
 template< typename ValueType_T, typename Tag_T = sse_tag >
-inline uint32_t less_than_index( ValueType_T val,
-                                 typename traits< ValueType_T, Tag_T >::simd_type simdVal )
+inline uint32_t greater_than_index( ValueType_T val,
+                                    typename traits< ValueType_T, Tag_T >::simd_type simdVal )
 {
     return mask_to_index< ValueType_T, Tag_T >(
-            less_than_mask< ValueType_T, Tag_T >( val, simdVal ) );
+            greater_than_mask< ValueType_T, Tag_T >( val, simdVal ) );
 }
 
 // Equal mask
 // ------------------------------------------------------------------------------------------------
 template< typename ValueType_T, typename Tag_T = sse_tag >
-inline uint32_t equal_mask( ValueType_T,
-                            typename traits< ValueType_T, Tag_T >::simd_type )
+inline uint32_t equal_mask( ValueType_T, typename traits< ValueType_T, Tag_T >::simd_type )
 {
     return 0;
 }
 
 template<> inline uint32_t
-equal_mask< uint32_t, sse_tag >( uint32_t key, __m128i cmp )
+equal_mask< int32_t, sse_tag >( int32_t key, __m128i cmp )
 {
     return _mm_movemask_epi8( _mm_cmpeq_epi32( _mm_set1_epi32( key ), cmp ) );
 }
 
 template<> inline uint32_t
-equal_mask< uint32_t, avx_tag >( uint32_t key, __m256i cmp )
+equal_mask< int32_t, avx_tag >( int32_t key, __m256i cmp )
 {
     return _mm256_movemask_epi8( _mm256_cmpeq_epi32( _mm256_set1_epi32( key ), cmp ) );
 }
@@ -135,7 +131,7 @@ low_insert( typename traits< ValueType_T, Tag_T >::simd_type, ValueType_T )
 }
 
 template<> inline __m128i
-low_insert< uint32_t, sse_tag >( __m128i vec, uint32_t val )
+low_insert< int32_t, sse_tag >( __m128i vec, int32_t val )
 {
     return _mm_insert_epi32( _mm_srli_si128( vec, 4 ), val, 3 );
 }
