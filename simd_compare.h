@@ -56,9 +56,13 @@ template< typename ValueType_T > struct traits< ValueType_T, avx_tag >
 template< typename ValueType_T, typename Tag_T >
 inline uint32_t mask_to_index( uint32_t mask )
 {
-    return (mask == 0)
-        ? 0
-        : (_bit_scan_reverse( mask ) + 1) / sizeof(ValueType_T);
+    if( sizeof(typename traits< ValueType_T, Tag_T >::simd_type) > 16 )
+    {
+        return (mask == 0)
+            ? 0
+            : (_bit_scan_reverse( mask ) + 1) / sizeof(ValueType_T);
+    }
+    return _bit_scan_reverse( mask + 1) / sizeof(ValueType_T);
 }
 
 // Greater than mask

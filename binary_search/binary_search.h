@@ -32,7 +32,7 @@ public:
         for( size_t i = 0; i < array_size; ++i )
         {
             std::advance( end, step );
-            pCmp[array_size - i - 1] = *end;
+            pCmp[i] = *end;
         }
     }
 
@@ -88,7 +88,7 @@ public:
         {
             std::advance( it, step );
             ranges_[ i ] = it;
-            pCmp[array_size - i] = *it;
+            pCmp[i-1] = *it;
         }
         ranges_[ array_size+1 ] = std::prev(ref_.end());
     }
@@ -128,7 +128,7 @@ ForwardIterator lower_bound( ForwardIterator beg, ForwardIterator end, const T& 
     for( size_t i = 0; i < array_size; ++i )
     {
         std::advance( it, step );
-        pCmp[array_size - i - 1] = *it;
+        pCmp[i] = *it;
     }
 
     // N-Way search
