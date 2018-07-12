@@ -59,26 +59,17 @@ public:
         for( int i = 0; i < tree_.size(); ++i )
         {
             li = greater_than_index< value_type, TAG_T >( key, *tree_[i].get_simd( idx ) );
-            auto debugmask = greater_than_mask< value_type, TAG_T >( key, *tree_[i].get_simd( idx ) );
-            std::cout << i << " - " << idx
-                      << "," << std::setw(8) << std::setfill('0') << key 
-                      << "," << *tree_[i].get_simd( idx )
-                      << "," << li
-                      << ",0x" << std::setw(8) << std::setfill('0') << debugmask
-                      << std::endl;
-            idx = idx * (array_size+1) + li;
+            idx = idx * array_size + li;
         }
 
         const simd_type* cmp = reinterpret_cast< const simd_type* >( &ref_[ idx * array_size ] );
-        std::cout << "equal - " << idx << "," << key << "," << *cmp << std::endl;
         uint32_t mask = equal_mask< value_type, TAG_T >( key, *cmp );
 
-        std::cout << "mask: 0x" << std::setw(8) << std::setfill('0') << mask << std::endl;
         if( mask == 0 )
         {
             return ref_.end();
         }
-        uint32_t off = mask_to_index< value_type, TAG_T >( mask );
+        uint32_t off = mask_to_index< value_type, TAG_T >( mask ) - 1;
         auto it = ref_.begin();
         std::advance( it, idx * array_size + off );
         return it;
@@ -94,34 +85,18 @@ private:
 
         const simd_type* get_simd( size_t idx ) const
         {
+            if( idx > keys_.size() )
+                idx = 0;
             return reinterpret_cast< const simd_type* >( &keys_[ idx * array_size ] );
         }
 
         void adjust()
         {
             size_t size = keys_.size() / array_size;
-//            if( keys_.size() > size * array_size )
-//            {
-//                size_t cnt = array_size - (keys_.size() - size * array_size);
-//                auto it = keys_.begin();
-//                std::advance( it, size * array_size );
-//
-//                for( size_t i = 0; i < cnt; ++i )
-//                {
-//                    keys_.insert( it, std::numeric_limits< value_type >::min() );
-//                }
-//            }
             if( keys_.size() > size * array_size )
                 ++size;
             size *= array_size;
-            keys_.resize( size, 0x7fffffff );
-            for( size_t i = 0; i < keys_.size(); i += array_size )
-            {
-                for( size_t j = 0; j < array_size / 2; ++j )
-                {
-                    std::swap( keys_[i + j], keys_[i + array_size - j - 1] );
-                }
-            }
+            keys_.resize( size, std::numeric_limits< value_type >::max() );
         }
     };
 
@@ -134,7 +109,7 @@ private:
             return;
 
         tree_level level;
-        for( int i = array_size; i < cont.size(); i += array_size )
+        for( int i = array_size-1; i < cont.size(); i += array_size )
         {
             level.keys_.push_back( cont[ i ] );
         }
@@ -142,18 +117,10 @@ private:
         build_index( level.keys_ );
 
         level.adjust();
-//        std::cout << tree_.size() << " - ";
-//        for( auto&& i : level.keys_ )
-//        {
-//            std::cout << i << ",";
-//        }
-//        std::cout << std::endl;
-
         tree_.emplace_back( std::move( level ) );
         return;
     }
 };
-
 
 }} // namespace simd_algoriths::nway_tree
 

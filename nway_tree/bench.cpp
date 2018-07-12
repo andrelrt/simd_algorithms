@@ -84,7 +84,7 @@ namespace sa = simd_algorithms;
 int main(int argc, char* /*argv*/[])
 {
     constexpr size_t runSize = 0x00400000;
-    constexpr size_t loop = 5;
+    constexpr size_t loop = 10;
     if( argc > 1 )
     {
         g_verbose = false;
@@ -98,15 +98,15 @@ int main(int argc, char* /*argv*/[])
     {
         size_t base = bench< std::vector< int32_t >,
                              container_only,
-                             sa::sse_tag >( "lower_bound ........", runSize, loop );
+                             sa::sse_tag >( "lower_bound .", runSize, loop );
 
         size_t index1 = bench< std::vector< int32_t >,
                                 simd_algorithms::nway_tree::index,
-                                sa::sse_tag >( "index SSE...", runSize, loop );
+                                sa::sse_tag >( "index SSE ...", runSize, loop );
 
         size_t index2 = bench< std::vector< int32_t >,
                                 simd_algorithms::nway_tree::index,
-                                sa::avx_tag >( "index AVX...", runSize, loop );
+                                sa::avx_tag >( "index AVX ...", runSize, loop );
 
         if( g_verbose )
         {
@@ -122,8 +122,8 @@ int main(int argc, char* /*argv*/[])
         else
         {
             std::cout
-                << base << "," 
-                << index1 << "," 
+                << base << ","
+                << index1 << ","
                 << index2
                 << std::endl;
         }
