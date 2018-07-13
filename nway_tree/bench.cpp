@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <iomanip>
-#include <vector>
 #include <algorithm>
 #include <numeric>
 #include <boost/timer/timer.hpp>
@@ -96,15 +95,15 @@ int main(int argc, char* /*argv*/[])
     }
     while( 1 )
     {
-        size_t base = bench< std::vector< int32_t >,
+        size_t base = bench< sa::aligned_vector< int32_t >,
                              container_only,
                              sa::sse_tag >( "lower_bound .", runSize, loop );
 
-        size_t index1 = bench< std::vector< int32_t >,
+        size_t index1 = bench< sa::aligned_vector< int32_t >,
                                 simd_algorithms::nway_tree::index,
                                 sa::sse_tag >( "index SSE ...", runSize, loop );
 
-        size_t index2 = bench< std::vector< int32_t >,
+        size_t index2 = bench< sa::aligned_vector< int32_t >,
                                 simd_algorithms::nway_tree::index,
                                 sa::avx_tag >( "index AVX ...", runSize, loop );
 

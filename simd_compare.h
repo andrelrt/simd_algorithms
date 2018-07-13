@@ -5,11 +5,18 @@
 #include <x86intrin.h>
 #include <type_traits>
 #include <limits>
+#include <vector>
+#include <boost/align/aligned_allocator.hpp>
 
 namespace simd_algorithms {
 
 struct sse_tag {};
 struct avx_tag {};
+
+// Aligned vector
+// ------------------------------------------------------------------------------------------------
+template< typename Val_T >
+using aligned_vector = std::vector< Val_T, boost::alignment::aligned_allocator<Val_T, 64> >;
 
 // Traits
 // ------------------------------------------------------------------------------------------------

@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <iomanip>
-#include <vector>
 #include "../simd_compare.h"
 
 std::ostream& operator<<( std::ostream& out, __m128i val )
@@ -56,7 +55,7 @@ public:
     {
         size_t idx = 0;
         uint32_t li;
-        for( int i = 0; i < tree_.size(); ++i )
+        for( size_t i = 0; i < tree_.size(); ++i )
         {
             li = greater_than_index< value_type, TAG_T >( key, *tree_[i].get_simd( idx ) );
             idx = idx * array_size + li;
@@ -81,7 +80,7 @@ private:
 
     struct tree_level
     {
-        std::vector< value_type > keys_;
+        aligned_vector< value_type > keys_;
 
         const simd_type* get_simd( size_t idx ) const
         {
@@ -100,16 +99,16 @@ private:
         }
     };
 
-    std::vector< tree_level > tree_;
+    aligned_vector< tree_level > tree_;
     const container_type& ref_;
 
     void build_index( const container_type& cont )
     {
-        if( cont.size() < array_size )
+        if( cont.size() <= array_size )
             return;
 
         tree_level level;
-        for( int i = array_size-1; i < cont.size(); i += array_size )
+        for( size_t i = array_size-1; i < cont.size(); i += array_size )
         {
             level.keys_.push_back( cont[ i ] );
         }

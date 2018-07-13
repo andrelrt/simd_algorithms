@@ -6,7 +6,6 @@
 #include <x86intrin.h>
 #include <array>
 #include <iterator>
-#include <vector>
 #include "../simd_compare.h"
 
 namespace simd_algorithms{

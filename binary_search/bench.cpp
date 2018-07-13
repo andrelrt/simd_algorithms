@@ -2,12 +2,12 @@
 
 #include <iostream>
 #include <iomanip>
-#include <vector>
 #include <algorithm>
 #include <numeric>
 #include <boost/timer/timer.hpp>
 
 bool g_verbose = true;
+namespace sa = simd_algorithms;
 
 template< class Cont_T, typename TAG_T >
 struct container_only
@@ -42,7 +42,7 @@ struct container_simd_lb
 
     const_iterator find( const value_type& key )
     {
-        auto first = simd_algorithms::binary_search::lower_bound
+        auto first = sa::binary_search::lower_bound
             <const_iterator, value_type, TAG_T>( ref_.begin(), ref_.end(), key );
 
         return (first!=ref_.end() && !(key<*first)) ? first : ref_.end();
@@ -102,7 +102,6 @@ size_t bench( const std::string& name, size_t size, size_t loop )
     return timer.elapsed().wall;
 }
 
-namespace sa = simd_algorithms;
 int main(int argc, char* /*argv*/[])
 {
     constexpr size_t runSize = 0x00400000;
@@ -118,29 +117,29 @@ int main(int argc, char* /*argv*/[])
     }
     while( 1 )
     {
-        size_t base = bench< std::vector< int32_t >,
+        size_t base = bench< sa::aligned_vector< int32_t >,
                              container_only,
                              sa::sse_tag >( "lower_bound ........", runSize, loop );
 
-        size_t cache = bench< std::vector< int32_t >,
+        size_t cache = bench< sa::aligned_vector< int32_t >,
                               simd_algorithms::binary_search::index_cache,
                               sa::sse_tag >( "index_cache SSE.....", runSize, loop );
-        size_t cache2 = bench< std::vector< int32_t >,
+        size_t cache2 = bench< sa::aligned_vector< int32_t >,
                                simd_algorithms::binary_search::index_cache,
                                sa::avx_tag >( "index_cache AVX.....", runSize, loop );
 
         if( g_verbose )
         {
-            size_t nocache = bench< std::vector< int32_t >,
+            size_t nocache = bench< sa::aligned_vector< int32_t >,
                                     simd_algorithms::binary_search::index_nocache,
                                     sa::sse_tag >( "index_nocache SSE...", runSize, loop );
-            size_t nocache2 = bench< std::vector< int32_t >,
+            size_t nocache2 = bench< sa::aligned_vector< int32_t >,
                                     simd_algorithms::binary_search::index_nocache,
                                     sa::avx_tag >( "index_nocache AVX...", runSize, loop );
 
-            size_t simdlb = bench< std::vector< int32_t >, container_simd_lb,
+            size_t simdlb = bench< sa::aligned_vector< int32_t >, container_simd_lb,
                                    sa::sse_tag >( "SIMD lower_bound SSE", runSize, loop );
-            size_t simdlb2 = bench< std::vector< int32_t >, container_simd_lb,
+            size_t simdlb2 = bench< sa::aligned_vector< int32_t >, container_simd_lb,
                                     sa::avx_tag >( "SIMD lower_bound AVX", runSize, loop );
 
             std::cout
