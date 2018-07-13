@@ -143,6 +143,13 @@ low_insert< int32_t, sse_tag >( __m128i vec, int32_t val )
     return _mm_insert_epi32( _mm_srli_si128( vec, 4 ), val, 3 );
 }
 
+template<> inline __m256i
+low_insert< int32_t, avx_tag >( __m256i vec, int32_t val )
+{
+    return _mm256_insert_epi32( _mm256_permutevar8x32_epi32( vec, _mm256_set_epi32( 7, 7, 6, 5, 4, 3, 2, 1 ) ),
+                                val, 7 );
+}
+
 } //namespace simd_algorithms
 
 #endif // SIMD_ALGORITHMS_BINARY_SEARCH_H

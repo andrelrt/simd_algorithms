@@ -22,13 +22,13 @@ std::ostream& operator<<( std::ostream& out, __m128i val )
 namespace simd_algorithms{
 namespace sort{
 
-template< class Cont_T >
+template< class Cont_T, typename TAG_T >
 class bubble
 {
 public:
 	using container_type = Cont_T;
     using value_type     = typename container_type::value_type;
-    using simd_type      = typename traits< value_type >::simd_type;
+    using simd_type      = typename traits< value_type, TAG_T >::simd_type;
 
     void sort( container_type& cont )
     {
@@ -40,7 +40,7 @@ public:
             for( size_t i = 0; i < end; ++i )
             {
                 auto cmp = reinterpret_cast<simd_type*>( &cont[i+1] );
-                uint32_t off = greater_than_index( cont[i], *cmp );
+                uint32_t off = greater_than_index< value_type, TAG_T >( cont[i], *cmp );
 
                 if( off != 0 )
                 {
@@ -62,17 +62,17 @@ public:
     }
 
 private:
-    constexpr static size_t array_size = traits< value_type >::simd_size;
+    constexpr static size_t array_size = traits< value_type, TAG_T >::simd_size;
 };
 
 
-template< class Cont_T >
+template< class Cont_T, typename TAG_T >
 class bubble2
 {
 public:
 	using container_type = Cont_T;
     using value_type     = typename container_type::value_type;
-    using simd_type      = typename traits< value_type >::simd_type;
+    using simd_type      = typename traits< value_type, TAG_T >::simd_type;
 
     void sort( container_type& cont )
     {
@@ -84,8 +84,8 @@ public:
             auto cmp = *reinterpret_cast<simd_type*>( &cont[0] );
             for( size_t i = 0; i < end; ++i )
             {
-                cmp = low_insert( cmp, cont[ i + array_size ] );
-                uint32_t off = greater_than_index( cont[i], cmp );
+                cmp = low_insert< value_type, TAG_T >( cmp, cont[ i + array_size ] );
+                uint32_t off = greater_than_index< value_type, TAG_T >( cont[i], cmp );
 
                 if( off != 0 )
                 {
@@ -107,7 +107,7 @@ public:
     }
 
 private:
-    constexpr static size_t array_size = traits< value_type >::simd_size;
+    constexpr static size_t array_size = traits< value_type, TAG_T >::simd_size;
 };
 
 }} // namespace simd_algoriths::bubble_sort
