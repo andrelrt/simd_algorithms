@@ -50,7 +50,7 @@ struct basic_bubble_sort
 };
 
 template< class Cont_T, template< typename...> class Sort_T, typename TAG_T >
-size_t bench( const std::string& name, size_t size, size_t loop )
+uint64_t bench( const std::string& name, size_t size, size_t loop )
 {
 	using container_type = Cont_T;
     using sort_type = Sort_T< container_type, TAG_T >;

@@ -52,7 +52,7 @@ private:
 };
 
 template< class Cont_T, template < typename... > class Index_T, typename TAG_T >
-size_t bench( const std::string& name, size_t size, size_t loop )
+uint64_t bench( const std::string& name, size_t size, size_t loop )
 {
 	using container_type = Cont_T;
     using index_type = Index_T< container_type, TAG_T >;
