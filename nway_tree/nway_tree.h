@@ -54,10 +54,9 @@ public:
     const_iterator find( const value_type& key ) const
     {
         size_t idx = 0;
-        uint32_t li;
         for( size_t i = 0; i < tree_.size(); ++i )
         {
-            li = greater_than_index< value_type, TAG_T >( key, *tree_[i].get_simd( idx ) );
+            uint32_t li = greater_than_index< value_type, TAG_T >( key, *tree_[i].get_simd( idx ) );
             idx = idx * array_size + li;
         }
 

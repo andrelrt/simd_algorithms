@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <numeric>
+#include <map>
 #include <boost/timer/timer.hpp>
 
 bool g_verbose = true;
@@ -26,6 +27,34 @@ struct container_only
     }
 private:
     const container_type& ref_;
+};
+
+template< class Cont_T, typename TAG_T >
+struct map_index
+{
+	using container_type = Cont_T;
+    using value_type     = typename container_type::value_type;
+    using const_iterator = typename container_type::const_iterator;
+
+    map_index( const container_type& ref ) : ref_( ref ){}
+
+    void build_index()
+    {
+        for( auto it = ref_.begin(); it != ref_.end(); ++it )
+        {
+            index_[ *it ] = it;
+        }
+    }
+
+    const_iterator find( const value_type& key )
+    {
+        auto it = index_.find( key );
+        return (it != index_.end()) ? it->second : ref_.end() ;
+    }
+
+private:
+    const container_type& ref_;
+    std::map< value_type, const_iterator > index_;
 };
 
 template< class Cont_T, template < typename... > class Index_T, typename TAG_T >
@@ -100,15 +129,18 @@ int main(int argc, char* /*argv*/[])
                              sa::sse_tag >( "lower_bound .", runSize, loop );
 
         size_t index1 = bench< sa::aligned_vector< int32_t >,
-                                simd_algorithms::nway_tree::index,
-                                sa::sse_tag >( "index SSE ...", runSize, loop );
+                               simd_algorithms::nway_tree::index,
+                               sa::sse_tag >( "index SSE ...", runSize, loop );
 
         size_t index2 = bench< sa::aligned_vector< int32_t >,
-                                simd_algorithms::nway_tree::index,
-                                sa::avx_tag >( "index AVX ...", runSize, loop );
+                               simd_algorithms::nway_tree::index,
+                               sa::avx_tag >( "index AVX ...", runSize, loop );
 
         if( g_verbose )
         {
+            bench< sa::aligned_vector< int32_t >, map_index,
+                   sa::sse_tag >( "std::map ....", runSize, loop );
+
             std::cout
                       << std::endl << "Index Speed up SSE.......: " << std::fixed << std::setprecision(2)
                       << static_cast<float>(base)/static_cast<float>(index1) << "x"
