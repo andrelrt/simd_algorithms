@@ -49,6 +49,15 @@ public:
     void build_index()
     {
         build_index( ref_ );
+//        std::cout << "- tree size: " << std::dec << tree_.size() << std::endl;
+//        size_t total = 0;
+//        for( size_t i = 0; i < tree_.size(); ++i )
+//        {
+//            std::cout << "  level " << i << " size: " << tree_[i].keys_.size() << std::endl;
+//            total += tree_[i].keys_.size();
+//        }
+//        std::cout << "  total: 0x" << std::hex
+//                  << std::setw(8) << std::setfill('0') << total << std::endl;
     }
 
     const_iterator find( const value_type& key ) const
