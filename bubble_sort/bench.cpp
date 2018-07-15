@@ -107,19 +107,19 @@ int main(int argc, char* /*argv*/[])
         bench< sa::aligned_vector< int32_t >, stl_sort,
                sa::sse_tag >( "STL sort ........", runSize, loop );
 
-        size_t bsort = bench< sa::aligned_vector< int32_t >,
+        uint64_t bsort = bench< sa::aligned_vector< int32_t >,
                               basic_bubble_sort,
                               sa::sse_tag >( "Bubble sort .....", runSize, loop );
-        size_t ssesort = bench< sa::aligned_vector< int32_t >,
+        uint64_t ssesort = bench< sa::aligned_vector< int32_t >,
                                 sa::sort::bubble,
                                 sa::sse_tag >( "SSE Bubble sort .", runSize, loop );
-        size_t ssesort2 = bench< sa::aligned_vector< int32_t >,
+        uint64_t ssesort2 = bench< sa::aligned_vector< int32_t >,
                                  sa::sort::bubble2,
                                  sa::sse_tag >( "SSE Bubble2 sort ", runSize, loop );
-        size_t avxsort = bench< sa::aligned_vector< int32_t >,
+        uint64_t avxsort = bench< sa::aligned_vector< int32_t >,
                                 sa::sort::bubble,
                                 sa::avx_tag >( "AVX Bubble sort .", runSize, loop );
-        size_t avxsort2 = bench< sa::aligned_vector< int32_t >,
+        uint64_t avxsort2 = bench< sa::aligned_vector< int32_t >,
                                  sa::sort::bubble2,
                                  sa::avx_tag >( "AVX Bubble2 sort ", runSize, loop );
 

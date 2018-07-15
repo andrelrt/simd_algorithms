@@ -117,29 +117,29 @@ int main(int argc, char* /*argv*/[])
     }
     while( 1 )
     {
-        size_t base = bench< sa::aligned_vector< int32_t >,
+        uint64_t base = bench< sa::aligned_vector< int32_t >,
                              container_only,
                              sa::sse_tag >( "lower_bound ........", runSize, loop );
 
-        size_t cache = bench< sa::aligned_vector< int32_t >,
+        uint64_t cache = bench< sa::aligned_vector< int32_t >,
                               simd_algorithms::binary_search::index_cache,
                               sa::sse_tag >( "index_cache SSE.....", runSize, loop );
-        size_t cache2 = bench< sa::aligned_vector< int32_t >,
+        uint64_t cache2 = bench< sa::aligned_vector< int32_t >,
                                simd_algorithms::binary_search::index_cache,
                                sa::avx_tag >( "index_cache AVX.....", runSize, loop );
 
         if( g_verbose )
         {
-            size_t nocache = bench< sa::aligned_vector< int32_t >,
+            uint64_t nocache = bench< sa::aligned_vector< int32_t >,
                                     simd_algorithms::binary_search::index_nocache,
                                     sa::sse_tag >( "index_nocache SSE...", runSize, loop );
-            size_t nocache2 = bench< sa::aligned_vector< int32_t >,
+            uint64_t nocache2 = bench< sa::aligned_vector< int32_t >,
                                     simd_algorithms::binary_search::index_nocache,
                                     sa::avx_tag >( "index_nocache AVX...", runSize, loop );
 
-            size_t simdlb = bench< sa::aligned_vector< int32_t >, container_simd_lb,
+            uint64_t simdlb = bench< sa::aligned_vector< int32_t >, container_simd_lb,
                                    sa::sse_tag >( "SIMD lower_bound SSE", runSize, loop );
-            size_t simdlb2 = bench< sa::aligned_vector< int32_t >, container_simd_lb,
+            uint64_t simdlb2 = bench< sa::aligned_vector< int32_t >, container_simd_lb,
                                     sa::avx_tag >( "SIMD lower_bound AVX", runSize, loop );
 
             std::cout
