@@ -162,7 +162,7 @@ low_insert( typename traits< ValueType_T, Tag_T >::simd_type, ValueType_T )
 template<> inline __m128i
 low_insert< int32_t, sse_tag >( __m128i vec, int32_t val )
 {
-    return _mm_insert_epi32( _mm_srli_si128( vec, 4 ), val, 3 );
+    return _mm_insert_epi32( _mm_shuffle_epi32( vec, _MM_SHUFFLE( 3, 3, 2, 1 ) ), val, 3 );
 }
 
 template<> inline __m256i
