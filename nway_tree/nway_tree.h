@@ -85,9 +85,9 @@ public:
     const_iterator find( const value_type& key ) const
     {
         size_t idx = 0;
-        for( size_t i = 0; i < tree_.size(); ++i )
+        for( auto&& level : tree_ )
         {
-            uint32_t li = greater_than_index< value_type, TAG_T >( key, *tree_[i].get_simd( idx ) );
+            uint32_t li = greater_than_index< value_type, TAG_T >( key, *level.get_simd( idx ) );
             idx = idx * array_size + li;
         }
 
@@ -114,8 +114,6 @@ private:
 
         const simd_type* get_simd( size_t idx ) const
         {
-            if( idx > keys_.size() )
-                idx = 0;
             return reinterpret_cast< const simd_type* >( &keys_[ idx * array_size ] );
         }
 
