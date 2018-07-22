@@ -79,6 +79,8 @@ private:
     std::map< value_type, const_iterator > index_;
 };
 
+void do_nothing( int32_t );
+
 template< class Cont_T, template < typename... > class Index_T, typename TAG_T >
 uint64_t bench( const std::string& name, size_t size, size_t loop )
 {
@@ -103,24 +105,25 @@ uint64_t bench( const std::string& name, size_t size, size_t loop )
     timer.start();
     for( size_t j = 0; j < loop; ++j )
     {
-        size_t cnt = 0;
+//        size_t cnt = 0;
         for( auto i : org )
         {
             auto ret = index.find( i );
+            do_nothing( *ret );
 
-            if( ret == sorted.end() )
-            {
-                std::cout << "end: 0x" << std::hex << i << ", i: 0x" << cnt << std::endl;
-                break;
-            }
-            else
-            {
-                if( *ret != i )
-                {
-                    std::cout << *ret << "," << i << "-";
-                }
-            }
-            ++cnt;
+//            if( ret == sorted.end() )
+//            {
+//                std::cout << "end: 0x" << std::hex << i << ", i: 0x" << cnt << std::endl;
+//                break;
+//            }
+//            else
+//            {
+//                if( *ret != i )
+//                {
+//                    std::cout << *ret << "," << i << "-";
+//                }
+//            }
+//            ++cnt;
         }
     }
     timer.stop();
