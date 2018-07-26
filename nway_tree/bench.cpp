@@ -149,10 +149,6 @@ int main(int argc, char* /*argv*/[])
     }
     while( 1 )
     {
-        uint64_t base = bench< sa::aligned_vector< int32_t >,
-                             container_only,
-                             sa::sse_tag >( "lower_bound .", runSize, loop );
-
         uint64_t index1 = bench< sa::aligned_vector< int32_t >,
                                simd_algorithms::nway_tree::index,
                                sa::sse_tag >( "index SSE ...", runSize, loop );
@@ -163,6 +159,10 @@ int main(int argc, char* /*argv*/[])
 
         if( g_verbose )
         {
+            uint64_t base = bench< sa::aligned_vector< int32_t >,
+                                 container_only,
+                                 sa::sse_tag >( "lower_bound .", runSize, loop );
+
             bench< sa::aligned_vector< int32_t >, map_index,
                    sa::sse_tag >( "std::map ....", runSize, loop );
 
@@ -178,7 +178,6 @@ int main(int argc, char* /*argv*/[])
         else
         {
             std::cout
-                << base << ","
                 << index1 << ","
                 << index2
                 << std::endl;

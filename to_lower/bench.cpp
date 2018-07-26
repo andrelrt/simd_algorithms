@@ -31,17 +31,38 @@
 
 bool g_verbose = true;
 
-struct scalar_to_lower
+struct std_to_lower
 {
     void operator()( std::string& str )
     {
         for( size_t i = 0; i < str.size(); ++i ) 
         {
             str[i] = ( 'A' <= str[i] && str[i] <= 'Z' ) ? str[i] + 0x20 : str[i];
-//            if( 'A' <= str[i] && str[i] <= 'Z' )
-//            {
-//                str[i] += 0x20;
-//            }
+        }
+    }
+};
+
+struct cachesize_to_lower
+{
+    void operator()( std::string& str )
+    {
+        size_t sz = str.size();
+        for( size_t i = 0; i < sz; ++i )
+        {
+            str[i] = ( 'A' <= str[i] && str[i] <= 'Z' ) ? str[i] + 0x20 : str[i];
+        }
+    }
+};
+
+struct autovec_to_lower
+{
+    void operator()( std::string& str )
+    {
+        size_t sz = str.size();
+        char* s = (char*) str.data();
+        for( size_t i = 0; i < sz; ++i )
+        {
+            s[i] = ( 'A' <= s[i] && s[i] <= 'Z' ) ? s[i] + 0x20 : s[i];
         }
     }
 };
@@ -87,13 +108,15 @@ int main(int argc, char* /*argv*/[])
     }
     while( 1 )
     {
-        uint64_t base = bench< scalar_to_lower >( "Scalar ", runSize, loop );
+        uint64_t base = bench< cachesize_to_lower >( "Scalar ", runSize, loop );
         uint64_t sse = bench< sa::string_algo::to_lower< sa::sse_tag > >( "SSE ...", runSize, loop );
         uint64_t avx = bench< sa::string_algo::to_lower< sa::avx_tag > >( "AVX ...", runSize, loop );
 
 
         if( g_verbose )
         {
+            bench< std_to_lower >( "STD ...", runSize, loop );
+            bench< autovec_to_lower >( "Autovec", runSize, loop );
             std::cout
                       << std::endl << "Index Speed up SSE.......: " << std::fixed << std::setprecision(2)
                       << static_cast<float>(base)/static_cast<float>(sse) << "x"

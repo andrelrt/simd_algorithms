@@ -50,12 +50,10 @@ struct to_lower
             ++data;
         }
 
-        for( size_t i = sz; i < str.size(); ++i ) 
+        size_t end = str.size();
+        for( size_t i = sz; i < end; ++i )
         {
-            if( 'A' <= str[i] && str[i] <= 'Z' )
-            {
-                str[i] += 0x20;
-            }
+            str[i] = ( 'A' <= str[i] && str[i] <= 'Z' ) ? str[i] + 0x20 : str[i];
         }
 
     }
