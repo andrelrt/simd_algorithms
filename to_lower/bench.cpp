@@ -35,7 +35,7 @@ struct std_to_lower
 {
     void operator()( std::string& str )
     {
-        for( size_t i = 0; i < str.size(); ++i ) 
+        for( size_t i = 0; i < str.size(); ++i )
         {
             str[i] = ( 'A' <= str[i] && str[i] <= 'Z' ) ? str[i] + 0x20 : str[i];
         }
@@ -131,7 +131,7 @@ int main(int argc, char* /*argv*/[])
             std::cout
                 << base << ","
                 << sse << ","
-                << avx 
+                << avx
                 << std::endl;
         }
     }
