@@ -106,7 +106,7 @@ public:
             auto cmp = *reinterpret_cast<simd_type*>( &cont[0] );
             for( size_t i = 0; i < end; ++i )
             {
-                cmp = low_insert< value_type, TAG_T >( cmp, cont[ i + array_size ] );
+                cmp = high_insert< value_type, TAG_T >( cmp, cont[ i + array_size ] );
                 uint32_t off = greater_than_index< value_type, TAG_T >( cont[i], cmp );
 
                 if( off != 0 )

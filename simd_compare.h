@@ -365,19 +365,19 @@ inline uint32_t equal_index( ValueType_T val,
 // ------------------------------------------------------------------------------------------------
 template< typename ValueType_T, typename Tag_T = sse_tag >
 inline typename traits< ValueType_T, Tag_T >::simd_type
-low_insert( typename traits< ValueType_T, Tag_T >::simd_type, ValueType_T )
+high_insert( typename traits< ValueType_T, Tag_T >::simd_type, ValueType_T )
 {
     return traits< ValueType_T, Tag_T >::zero();
 }
 
 template<> inline __m128i
-low_insert< int32_t, sse_tag >( __m128i vec, int32_t val )
+high_insert< int32_t, sse_tag >( __m128i vec, int32_t val )
 {
     return _mm_insert_epi32( _mm_shuffle_epi32( vec, _MM_SHUFFLE( 3, 3, 2, 1 ) ), val, 3 );
 }
 
 template<> inline __m256i
-low_insert< int32_t, avx_tag >( __m256i vec, int32_t val )
+high_insert< int32_t, avx_tag >( __m256i vec, int32_t val )
 {
     return _mm256_insert_epi32( _mm256_permutevar8x32_epi32( vec, _mm256_set_epi32( 7, 7, 6, 5, 4, 3, 2, 1 ) ),
                                 val, 7 );
