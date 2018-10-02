@@ -21,7 +21,8 @@
 // SOFTWARE.
 
 #include <string>
+#include "to_lower.h"
 
-void do_nothing( const std::string& )
+void do_nothing( const simd_algorithms::aligned_string& )
 {
 }

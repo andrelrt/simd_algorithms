@@ -28,6 +28,7 @@
 #include <type_traits>
 #include <limits>
 #include <vector>
+#include <string>
 #include <boost/align/aligned_allocator.hpp>
 
 namespace simd_algorithms {
@@ -40,6 +41,9 @@ struct avx_tag {};
 template< typename Val_T >
 using aligned_vector = std::vector< Val_T, boost::alignment::aligned_allocator<Val_T, 64> >;
 
+using aligned_string = std::basic_string< char,
+                                          std::char_traits<char>,
+                                          boost::alignment::aligned_allocator<char, 64> >;
 // Traits
 // ------------------------------------------------------------------------------------------------
 template< typename ValueType_T, typename Tag_T = sse_tag > struct traits { };

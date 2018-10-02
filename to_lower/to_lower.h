@@ -33,7 +33,7 @@ namespace string_algo{
 template< typename TAG_T >
 struct to_lower
 {
-    void operator()( std::string& str )
+    void operator()( aligned_string& str )
     {
         constexpr static size_t array_size = traits< char, TAG_T >::simd_size;
         using simd_type = typename traits< char, TAG_T >::simd_type;

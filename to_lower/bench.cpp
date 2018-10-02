@@ -30,10 +30,11 @@
 #include <boost/timer/timer.hpp>
 
 bool g_verbose = true;
+namespace sa = simd_algorithms;
 
 struct std_to_lower
 {
-    void operator()( std::string& str )
+    void operator()( sa::aligned_string& str )
     {
         for( size_t i = 0; i < str.size(); ++i )
         {
@@ -44,7 +45,7 @@ struct std_to_lower
 
 struct cachesize_to_lower
 {
-    void operator()( std::string& str )
+    void operator()( sa::aligned_string& str )
     {
         size_t sz = str.size();
         for( size_t i = 0; i < sz; ++i )
@@ -56,7 +57,7 @@ struct cachesize_to_lower
 
 struct autovec_to_lower
 {
-    void operator()( std::string& str )
+    void operator()( sa::aligned_string& str )
     {
         size_t sz = str.size();
         char* s = (char*) str.data();
@@ -67,17 +68,17 @@ struct autovec_to_lower
     }
 };
 
-void do_nothing( const std::string& );
+void do_nothing( const sa::aligned_string& );
 
 template< typename TO_LOWER_T >
-uint64_t bench( const std::string& name, size_t size, size_t loop )
+uint64_t bench( const sa::aligned_string& name, size_t size, size_t loop )
 {
 	using functor = TO_LOWER_T;
 
     boost::timer::cpu_timer timer;
     functor toLower;
 
-    std::string str( size, 'C' );
+    sa::aligned_string str( size, 'C' );
 
     timer.start();
     for( size_t j = 0; j < loop; ++j )
@@ -92,7 +93,6 @@ uint64_t bench( const std::string& name, size_t size, size_t loop )
     return timer.elapsed().wall;
 }
 
-namespace sa = simd_algorithms;
 int main(int argc, char* /*argv*/[])
 {
     constexpr size_t runSize = 0x00100001;
