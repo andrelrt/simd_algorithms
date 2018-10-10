@@ -118,12 +118,13 @@ int main(int argc, char* /*argv*/[])
     if( argc > 1 )
     {
         g_verbose = false;
-        std::cout << "Bubble sort,SSE Bubble 1,SSE Bubble 2,AVX Bubble 1,AVX Bubble 2" << std::endl << std::endl << std::endl << std::endl;
+        std::cout << "count,Bubble sort,SSE Bubble 1,SSE Bubble 2,AVX Bubble 1,AVX Bubble 2" << std::endl;
     }
     else
     {
         std::cout << "\nsize: 0x" << std::hex << std::setw(8) << std::setfill( '0') << runSize << std::endl << std::endl;
     }
+    size_t cnt = 0;
     while( 1 )
     {
         bench< sa::aligned_vector< int32_t >, stl_sort,
@@ -168,6 +169,7 @@ int main(int argc, char* /*argv*/[])
         else
         {
             std::cout
+                << ++cnt << ","
                 << bsort << ","
                 << ssesort << ","
                 << ssesort2 << ","

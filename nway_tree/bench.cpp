@@ -141,12 +141,13 @@ int main(int argc, char* /*argv*/[])
     if( argc > 1 )
     {
         g_verbose = false;
-        std::cout << "base,index_sse,index_avx" << std::endl;
+        std::cout << "count,index_sse,index_avx" << std::endl;
     }
     else
     {
         std::cout << "\nsize: 0x" << std::hex << std::setw(8) << std::setfill( '0') << runSize << std::endl << std::endl;
     }
+    size_t cnt = 0;
     while( 1 )
     {
         uint64_t index1 = bench< sa::aligned_vector< int32_t >,
@@ -178,6 +179,7 @@ int main(int argc, char* /*argv*/[])
         else
         {
             std::cout
+                << ++cnt << ","
                 << index1 << ","
                 << index2
                 << std::endl;
